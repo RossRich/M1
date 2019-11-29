@@ -61,34 +61,23 @@ int8_t HD44780::init() {
 bool HD44780::isBusy() {
   Serial.println("------ isBusy -");
   bool busyFlag = true;
-  int8_t receive = 0;
-  int8_t res = 0;
+  uint8_t receive = 0;
   setError(0);
 
   this->pcf->send(
       PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E, false);
 
   do {
-    this->pcf->receive(1, false);
-
-    if (!receive && pcf->isError())
-      setError();
-
-    res = uint8_t(receive) & 0xF0;
+    receive = uint8_t(this->pcf->receive(1, false)) & 0xF0;
 
     pcf->send();
     pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT);
     pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E);
     pcf->commit(false);
 
-    receive = this->pcf->receive(1, false);
+    receive |= uint8_t(this->pcf->receive(1, false)) >> 4;
 
-    if (!receive && pcf->isError())
-      setError();
-
-    res |= (uint8_t(receive) >> 4);
-
-    busyFlag = bool(bitRead(res, 7));
+    busyFlag = bool(bitRead(receive, 7));
 
     if (busyFlag) {
       pcf->send();
@@ -100,11 +89,14 @@ bool HD44780::isBusy() {
       pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, true);
 
     Serial.print("Received: ");
-    Serial.println(res, HEX);
+    Serial.println(receive, HEX);
 
-  } while (busyFlag);
+  } while (busyFlag && !pcf->isError());
 
-  this->cursorIndex = res;
+  if (pcf->isError())
+    setError();
+  else
+    this->cursorIndex = receive;
 
   Serial.println("------ end -");
   return busyFlag;
@@ -125,7 +117,7 @@ void HD44780::command(uint8_t cmnd, uint8_t dataWord, bool isEnd) {
   pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | HD_READ_STATUS);
   pcf->commit(isEnd);
 
-  setError(pcf->isError());
+  setError(uint8_t(pcf->isError()));
 };
 
 uint8_t HD44780::getCursorIndex() { return this->cursorIndex; }
