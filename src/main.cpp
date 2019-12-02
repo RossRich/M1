@@ -1,14 +1,19 @@
 #include <Arduino.h>
 #include <PCF8574T.h>
 #include <HD44780.h>
+#include <Encoder.h>
 #include "M1.h"
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
+Encoder e1(4, 7, 9);
 
 void setup() {
   Serial.begin(57600);
   display.init();
+  if (display.isError())
+    errorBlink();
   pinMode(BUTTON1, INPUT_PULLUP);
+  e1.onPressListener(serialPrint);
 }
 
 void loop() {
@@ -16,11 +21,18 @@ void loop() {
   const char *cst = "Hello World!";
   uint32_t t = millis();
   display.print(cst, 12);
+  // Serial.println(millis() - t);
+  Serial.print("CursorIndex: ");
+  Serial.println(display.getCursorIndex());
+
+  // t = millis();
+  display.printBeginPosition(0x40, cst, 12);
   Serial.println(millis() - t);
   Serial.print("CursorIndex: ");
   Serial.println(display.getCursorIndex());
-  
-  if(display.isError()) errorBlink();
+
+  if (display.isError())
+    errorBlink();
 
   do {
     while (Serial.available()) {
@@ -50,7 +62,9 @@ void loop() {
 
       Serial.println(display.getCursorIndex());
     }
-    if(display.isError()) errorBlink();
+    if (display.isError())
+      errorBlink();
+    e1.listen();
   } while (ch != '!');
   Serial.println("Exit");
   while (1)
@@ -71,4 +85,12 @@ void errorBlink() {
     }
     delay(1500);
   }
+}
+
+void serialPrint(const char* st) {
+  Serial.println(st);
+}
+
+void serialPrint(uint8_t val) {
+  Serial.println(val, HEX);
 }

@@ -16,6 +16,12 @@ HD44780::HD44780(uint8_t address, uint8_t chars, uint8_t rows) : HD44780() {
   this->chars = chars;
   this->rows = rows;
   this->errorStatus = 0;
+  this->dBuffer[MAX_BUF_SUZE] = {};
+  this->screenArea[HD_LINE_LENGTH * 2] = {};
+  for (uint8_t i = 0; i < 40; ++i) {
+    this->screenArea[i] = i;
+    this->screenArea[i + 40] = i + 64;
+  }
 }
 
 int8_t HD44780::init() {
@@ -53,8 +59,6 @@ int8_t HD44780::init() {
 
   home();
 
-  // isBusy();
-
   return 1;
 }
 
@@ -85,8 +89,10 @@ bool HD44780::isBusy() {
       pcf->addToSend(
           PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E);
       pcf->commit(false);
-    } else
+    } else {
+      // pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, false);
       pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, true);
+    }
 
     Serial.print("Received: ");
     Serial.println(receive, HEX);
@@ -118,6 +124,15 @@ void HD44780::command(uint8_t cmnd, uint8_t dataWord, bool isEnd) {
   pcf->commit(isEnd);
 
   setError(uint8_t(pcf->isError()));
-};
+}
 
-uint8_t HD44780::getCursorIndex() { return this->cursorIndex; }
+void HD44780::printBeginPosition(
+    uint8_t position, const char cst[], uint8_t len) {
+
+  WRITE_TO_POSOTION(position, false);
+  isBusy();
+  for (uint8_t i = 0; i < len; i++) {
+    WRITE_DATA(cst[i], false);
+    isBusy();
+  }
+}

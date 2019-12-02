@@ -52,7 +52,8 @@
 #define HD_S_FONT_5X10 0x4U
 #define HD_S_FONT_5X8 0x0U
 
-#define HD_SET_CHAR 0x80U
+#define HD_WRITE_TO_POSITION 0x80U
+#define HD_LINE_LENGTH 40u // lenght of one line in two lines mode
 
 const uint8_t MAX_BUF_SUZE = 32;
 
@@ -68,8 +69,9 @@ private:
   uint8_t address;
   uint8_t cursorIndex;
   uint8_t dBufferCounter;
-  uint8_t dBuffer[MAX_BUF_SUZE];
+  uint8_t dBuffer[];
   int8_t errorStatus;
+  uint8_t screenArea[];
 
   inline void WRITE_COMMAND(uint8_t code, bool isEnd = true) {
     command(HD_WRITE_COMMAND, code, isEnd);
@@ -77,6 +79,10 @@ private:
 
   inline void WRITE_DATA(uint8_t data, bool isEnd = true) {
     command(HD_WRITE_DATA, data, isEnd);
+  };
+
+  inline void WRITE_TO_POSOTION(uint8_t posotion, bool isEnd = true) {
+    command(HD_WRITE_COMMAND, posotion | HD_WRITE_TO_POSITION, isEnd);
   };
 
 public:
@@ -87,7 +93,7 @@ public:
   void print(const T[], uint8_t);
   void command(uint8_t, uint8_t, bool);
   bool isBusy();
-  uint8_t getCursorIndex();
+  void printBeginPosition(uint8_t, const char[], uint8_t);
 
   inline void clear(bool isEnd = true) {
     command(HD_WRITE_COMMAND, HD_CLEAR, isEnd);
@@ -113,6 +119,7 @@ public:
     command(HD_WRITE_COMMAND, HD_MOVE_CURSOR_LEFT, isEnd);
   };
 
+  inline uint8_t getCursorIndex() { return this->cursorIndex; };
   inline bool isError() { return bool(this->errorStatus); }
   inline void setError(uint8_t err = 1) { this->errorStatus = err; };
   // inline void clearError() { this->errorStatus = 0; };
