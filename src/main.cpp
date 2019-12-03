@@ -5,7 +5,7 @@
 #include "M1.h"
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
-Encoder e1(4, 7, 9);
+Encoder e1(ENCODER_S1, ENCODER_S2, ENCODER_BUTTON);
 
 void setup() {
   Serial.begin(57600);
@@ -13,7 +13,8 @@ void setup() {
   if (display.isError())
     errorBlink();
   pinMode(BUTTON1, INPUT_PULLUP);
-  e1.onPressListener(serialPrint);
+  e1.setClickListener();
+  attachInterrupt(0, e1.listen, RISING);
 }
 
 void loop() {
@@ -64,7 +65,7 @@ void loop() {
     }
     if (display.isError())
       errorBlink();
-    e1.listen();
+    
   } while (ch != '!');
   Serial.println("Exit");
   while (1)
@@ -87,10 +88,3 @@ void errorBlink() {
   }
 }
 
-void serialPrint(const char* st) {
-  Serial.println(st);
-}
-
-void serialPrint(uint8_t val) {
-  Serial.println(val, HEX);
-}
