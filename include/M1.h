@@ -4,10 +4,11 @@
 #define BUTTON1 10
 #define ENCODER_S1 2
 #define ENCODER_S2 7
-#define ENCODER_BUTTON 9
+#define ENCODER_BUTTON 10
 
 void errorBlink();
-void serialPrint(const char*);
-void encoderInterrupt();
+void clickOnEncoderButton();
+void turnEncoder(int8_t);
+void interruptWrapper();
 
 #endif // M1_H

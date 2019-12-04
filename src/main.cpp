@@ -6,18 +6,32 @@
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
 Encoder e1(ENCODER_S1, ENCODER_S2, ENCODER_BUTTON);
+void encoderRotationDiractionListener() { e1.listenRotation(); }
 
 void setup() {
+  pinMode(BUTTON1, INPUT_PULLUP);
   Serial.begin(57600);
   display.init();
   if (display.isError())
     errorBlink();
-  pinMode(BUTTON1, INPUT_PULLUP);
-  e1.setClickListener();
-  attachInterrupt(0, e1.listen, RISING);
+  e1.setRotationListener(encoderRotationDiractionListener);
 }
 
+uint32_t time = 0;
 void loop() {
+
+  while (1) {
+
+    if (time + 50 <= millis()) {
+      time += 50;
+      int8_t d = e1.getDiraction();
+      if (d == ENCODER_CCW_ROTATION)
+        Serial.println("<-");
+      else if (d == ENCODER_CW_ROTATION)
+        Serial.println("->");
+    }
+  }
+
   char ch = ' ';
   const char *cst = "Hello World!";
   uint32_t t = millis();
@@ -36,6 +50,7 @@ void loop() {
     errorBlink();
 
   do {
+
     while (Serial.available()) {
       Serial.readBytes(&ch, 1);
       if (ch == '\n' || ch == '\r')
@@ -65,7 +80,7 @@ void loop() {
     }
     if (display.isError())
       errorBlink();
-    
+
   } while (ch != '!');
   Serial.println("Exit");
   while (1)
@@ -88,3 +103,4 @@ void errorBlink() {
   }
 }
 
+void clickOnEncoderButton() { Serial.println("Clicked En but."); }
