@@ -38,14 +38,17 @@ void loop() {
     if (e1.isButtonClick())
       Serial.println("Click button");
 
-    if (e1.isButtonKeep())
-      Serial.println("Keep encoder button");
+   /*  if (e1.isButtonKeep())
+      Serial.println("Keep encoder button"); */
 
     if (e1.isButtonDown())
       Serial.println("Down but");
-      
+
     if (e1.isButtonUp())
       Serial.println("Up but");
+
+    if(e1.isButtonLongPress())
+      Serial.println("Long press");
 
     if (time + 50 <= millis()) {
       time += 50;

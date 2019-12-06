@@ -4,13 +4,16 @@
 Encoder::Encoder() {
   s1_ = 2;
   s2_ = 7;
-  button_ = 10;
 
-  buttonState_ = ENCODER_BUTTON_UNPRESS;
+  button_ = 10;
+  butLongPressTimer_ = internalTime_ = millis() + ENCODER_BUTTON_LISTEN_PERIOD;
+  buttonState_ = prewButtonState_ = ENCODER_BUTTON_UNPRESS;
+
   butChangeState_ = false;
   butDown_ = false;
   butUp_ = false;
   butClick_ = false;
+  butLongPress_ = false;
 }
 
 Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin, uint8_t buttonPin) : Encoder() {
@@ -44,18 +47,31 @@ void Encoder::listenRotation() {
 }
 
 void Encoder::listenButton() {
-  if (buttonListenPeriod_ <= millis()) {
+  internalTime_ = millis();
+  if (buttonListenPeriod_ <= internalTime_) {
+    buttonState_ = digitalRead(button_);
     buttonListenPeriod_ += ENCODER_BUTTON_LISTEN_PERIOD;
-    uint8_t bs = digitalRead(button_);
-    if ((bs == ENCODER_BUTTON_PRESS) && (bs != buttonState_)) {
+    butChangeState_ = buttonState_ != prewButtonState_;
+
+    if ((buttonState_ == ENCODER_BUTTON_PRESS) && butChangeState_) {
       butDown_ = true;
       butUp_ = butClick_ = false;
-    } else if ((bs == ENCODER_BUTTON_UNPRESS) && (bs != buttonState_)) {
-      butDown_ = false;
+      butLongPressTimer_ = internalTime_ + 1000u;
+      flRead_ = false;
+    } else if ((buttonState_ == ENCODER_BUTTON_UNPRESS) && (butChangeState_)) {
+      butDown_ = butLongPress_ = flRead_ = false;
       butUp_ = butClick_ = true;
     }
-    buttonState_ = bs;
+
+    prewButtonState_ = buttonState_;
   }
+  if ((butLongPressTimer_ <= internalTime_) &&
+      (buttonState_ == ENCODER_BUTTON_PRESS) &&
+      !flRead_) {
+    // butLongPressTimer_ += ENCODER_BUTTON_LONG_PRESS;
+    butLongPress_ = true;
+  }
+  butChangeState_ = false;
 }
 
 bool Encoder::isButtonKeep() const {
@@ -81,6 +97,15 @@ bool Encoder::isButtonUp() {
 bool Encoder::isButtonClick() {
   if (butClick_ && (buttonState_ == ENCODER_BUTTON_UNPRESS)) {
     butClick_ = !butClick_;
+    return true;
+  }
+  return false;
+}
+
+bool Encoder::isButtonLongPress() {
+  if (butLongPress_ && !flRead_) {
+    flRead_ = !flRead_;
+    butLongPress_ = !butLongPress_;
     return true;
   }
   return false;
