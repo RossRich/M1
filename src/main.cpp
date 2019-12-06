@@ -6,7 +6,16 @@
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
 Encoder e1(ENCODER_S1, ENCODER_S2, ENCODER_BUTTON);
-void encoderRotationDiractionListener() { e1.listenRotation(); }
+void encoderRotation() { e1.listenRotation(); }
+void clickOnEncoderButton() { Serial.println("Clicked En but."); }
+void longClickOnEncoder() { Serial.println("Long click"); }
+void encodeSpin() {
+  int8_t dd = e1.getDiraction();
+  if (dd == ENCODER_CCW_ROTATION)
+    Serial.println("Click and rotation <-");
+  else if (dd == ENCODER_CW_ROTATION)
+    Serial.println("Click and rotation ->");
+}
 
 void setup() {
   pinMode(BUTTON1, INPUT_PULLUP);
@@ -14,13 +23,29 @@ void setup() {
   display.init();
   if (display.isError())
     errorBlink();
-  e1.setRotationListener(encoderRotationDiractionListener);
+  e1.setRotationListener(encoderRotation);
+  e1.setClickListener(clickOnEncoderButton);
+  e1.setLongClickListener(longClickOnEncoder);
+  e1.setSpinListener(encodeSpin);
 }
 
 uint32_t time = 0;
 void loop() {
 
   while (1) {
+    e1.listenButton();
+
+    if (e1.isButtonClick())
+      Serial.println("Click button");
+
+    if (e1.isButtonKeep())
+      Serial.println("Keep encoder button");
+
+    if (e1.isButtonDown())
+      Serial.println("Down but");
+      
+    if (e1.isButtonUp())
+      Serial.println("Up but");
 
     if (time + 50 <= millis()) {
       time += 50;
@@ -102,5 +127,3 @@ void errorBlink() {
     delay(1500);
   }
 }
-
-void clickOnEncoderButton() { Serial.println("Clicked En but."); }
