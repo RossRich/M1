@@ -6,15 +6,28 @@
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
 Encoder e1(ENCODER_S1, ENCODER_S2, ENCODER_BUTTON);
+
 void encoderRotation() { e1.listenRotation(); }
-void clickOnEncoderButton() { Serial.println("Clicked En but."); }
-void longClickOnEncoder() { Serial.println("Long click"); }
+void clickOnEncoderButton() {
+  if (e1.isButtonClick()) {
+    Serial.println("Clicked En but.");
+  }
+}
 void encodeSpin() {
-  int8_t dd = e1.getDiraction();
-  if (dd == ENCODER_CCW_ROTATION)
-    Serial.println("Click and rotation <-");
-  else if (dd == ENCODER_CW_ROTATION)
-    Serial.println("Click and rotation ->");
+  if (e1.isSpinPressure()) {
+    int8_t dd = e1.getDiraction();
+    if (dd == ENCODER_CCW_ROTATION)
+      Serial.println("Click and rotation <-");
+    else if (dd == ENCODER_CW_ROTATION)
+      Serial.println("Click and rotation ->");
+  }
+}
+void encoderRotationn() {
+  int8_t d = e1.getDiraction();
+  if (d == ENCODER_CCW_ROTATION)
+    Serial.println("<-");
+  else if (d == ENCODER_CW_ROTATION)
+    Serial.println("->");
 }
 
 void setup() {
@@ -23,41 +36,40 @@ void setup() {
   display.init();
   if (display.isError())
     errorBlink();
-  e1.setRotationListener(encoderRotation);
-  e1.setClickListener(clickOnEncoderButton);
-  e1.setLongClickListener(longClickOnEncoder);
-  e1.setSpinListener(encodeSpin);
+  e1.setInterruptRotationListener(encoderRotation);
+  e1.addToListener(clickOnEncoderButton);
+  e1.addToListener(encodeSpin);
+  e1.addToListener(encoderRotationn);
+  // e1.setLongClickListener(longClickOnEncoder);
 }
 
-uint32_t time = 0;
 void loop() {
 
   while (1) {
-    e1.listenButton();
+    e1.listen();
 
-    if (e1.isButtonClick())
+    /* if (e1.isButtonClick())
       Serial.println("Click button");
 
-   /*  if (e1.isButtonKeep())
-      Serial.println("Keep encoder button"); */
+    if (e1.isButtonKeep())
+      Serial.println("Keep encoder button");
 
     if (e1.isButtonDown())
       Serial.println("Down but");
 
     if (e1.isButtonUp())
-      Serial.println("Up but");
+      Serial.println("Up but"); */
 
-    if(e1.isButtonLongPress())
-      Serial.println("Long press");
+    // if(e1.spinPressure_) {
+    //   int8_t d = e1.getDiraction();
+    //   if (d == ENCODER_CCW_ROTATION)
+    //     Serial.println("<- and press");
+    //   else if (d == ENCODER_CW_ROTATION)
+    //     Serial.println("press and ->");
+    // }
 
-    if (time + 50 <= millis()) {
-      time += 50;
-      int8_t d = e1.getDiraction();
-      if (d == ENCODER_CCW_ROTATION)
-        Serial.println("<-");
-      else if (d == ENCODER_CW_ROTATION)
-        Serial.println("->");
-    }
+    // if(e1.isButtonLongPress())
+    //   Serial.println("Long press");
   }
 
   char ch = ' ';

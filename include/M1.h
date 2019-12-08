@@ -9,6 +9,6 @@
 void errorBlink();
 void clickOnEncoderButton();
 void turnEncoder(int8_t);
-void interruptWrapper();
+void encoderRotation();
 
 #endif // M1_H
