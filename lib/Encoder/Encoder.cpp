@@ -29,18 +29,9 @@ Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin, uint8_t buttonPin) : Encoder() {
   pinMode(buttonPin, INPUT_PULLUP);
 }
 
-/* Encoder::Encoder(
-    uint8_t s1Pin, uint8_t s2Pin, uint8_t buttonPin,
-    void (*interruptRotation)())
-    : Encoder(s1Pin, s2Pin, buttonPin) {
-
-  setInterruptRotationListener(interruptRotation);
-} */
-
 void Encoder::setInterruptRotationListener(void (*uFunc)()) {
-  if ((uFunc != NULL) && (digitalPinToInterrupt(s1_) != NOT_AN_INTERRUPT)) {
+  if ((uFunc != NULL) && (digitalPinToInterrupt(s1_) != NOT_AN_INTERRUPT))
     attachInterrupt(digitalPinToInterrupt(s1_), uFunc, FALLING);
-  }
 }
 
 void Encoder::listenRotation() {
@@ -70,7 +61,7 @@ void Encoder::listen() {
       butDown_ = butLongPress_ = butUp_ = butClick_ = isReady_ = false;
 
     if (listenerBufferIndex_ != 0)
-      for (uint8_t i = 0; i < listenerBufferIndex_; i++)
+      for (uint8_t i = 0; i < listenerBufferIndex_; ++i)
         (*listenerArray[i])();
 
     prewButtonState_ = buttonState_;
@@ -112,7 +103,7 @@ bool Encoder::isButtonClick() {
 }
 
 bool Encoder::isSpinPressure() {
-  if(spinPressure_) {
+  if (spinPressure_) {
     spinPressure_ = !spinPressure_;
     return true;
   }

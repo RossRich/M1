@@ -2,32 +2,42 @@
 #include <PCF8574T.h>
 #include <HD44780.h>
 #include <Encoder.h>
+#include <Joystick.h>
 #include "M1.h"
 
 HD44780 display(PCF_ADDRESS_FIXED + PCF_ADDRESS_HARDWARE);
 Encoder e1(ENCODER_S1, ENCODER_S2, ENCODER_BUTTON);
+Joystick j1(JOYSTICK_X, JOYSTICK_Y, JOYSTICK_KEY);
 
 void encoderRotation() { e1.listenRotation(); }
 void clickOnEncoderButton() {
   if (e1.isButtonClick()) {
-    Serial.println("Clicked En but.");
+    display.home(false);
+    display.isBusy();
+    display.clear();
   }
 }
 void encodeSpin() {
   if (e1.isSpinPressure()) {
     int8_t dd = e1.getDiraction();
-    if (dd == ENCODER_CCW_ROTATION)
+    if (dd == ENCODER_CCW_ROTATION) {
       Serial.println("Click and rotation <-");
-    else if (dd == ENCODER_CW_ROTATION)
+      display.moveDisplayLeft();
+    } else if (dd == ENCODER_CW_ROTATION) {
+      display.moveDisplayRight();
       Serial.println("Click and rotation ->");
+    }
   }
 }
 void encoderRotationn() {
   int8_t d = e1.getDiraction();
-  if (d == ENCODER_CCW_ROTATION)
+  if (d == ENCODER_CCW_ROTATION) {
+    display.moveCursorRight();
     Serial.println("<-");
-  else if (d == ENCODER_CW_ROTATION)
+  } else if (d == ENCODER_CW_ROTATION) {
+    display.moveCursorLeft();
     Serial.println("->");
+  }
 }
 
 void setup() {
@@ -45,52 +55,36 @@ void setup() {
 
 void loop() {
 
-  while (1) {
-    e1.listen();
-
-    /* if (e1.isButtonClick())
-      Serial.println("Click button");
-
-    if (e1.isButtonKeep())
-      Serial.println("Keep encoder button");
-
-    if (e1.isButtonDown())
-      Serial.println("Down but");
-
-    if (e1.isButtonUp())
-      Serial.println("Up but"); */
-
-    // if(e1.spinPressure_) {
-    //   int8_t d = e1.getDiraction();
-    //   if (d == ENCODER_CCW_ROTATION)
-    //     Serial.println("<- and press");
-    //   else if (d == ENCODER_CW_ROTATION)
-    //     Serial.println("press and ->");
-    // }
-
-    // if(e1.isButtonLongPress())
-    //   Serial.println("Long press");
-  }
-
   char ch = ' ';
-  const char *cst = "Hello World!";
-  uint32_t t = millis();
-  display.print(cst, 12);
+  // const char *cst = "Hello World!";
+  // uint32_t t = millis();
+  // display.print(cst, 12);
   // Serial.println(millis() - t);
-  Serial.print("CursorIndex: ");
-  Serial.println(display.getCursorIndex());
+  // Serial.print("CursorIndex: ");
+  // Serial.println(display.getCursorIndex());
 
   // t = millis();
-  display.printBeginPosition(0x40, cst, 12);
-  Serial.println(millis() - t);
-  Serial.print("CursorIndex: ");
-  Serial.println(display.getCursorIndex());
-
-  if (display.isError())
-    errorBlink();
+  // display.printBeginPosition(0x40, cst, 12);
+  // Serial.println(millis() - t);
+  // Serial.print("CursorIndex: ");
+  // Serial.println(display.getCursorIndex());
 
   do {
+    e1.listen();
+    j1.listen();
 
+    if (j1.isKeyPress()) {
+      Serial.print(j1.x());
+      Serial.print("\t");
+      Serial.println(j1.y());
+    }
+
+    if(j1.isKeyClick()) {
+      Serial.println("asdasd");
+    }
+
+    if (display.isError())
+      errorBlink();
     while (Serial.available()) {
       Serial.readBytes(&ch, 1);
       if (ch == '\n' || ch == '\r')

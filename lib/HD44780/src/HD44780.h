@@ -119,6 +119,14 @@ public:
     command(HD_WRITE_COMMAND, HD_MOVE_CURSOR_LEFT, isEnd);
   };
 
+  inline void moveDisplayRight(bool isEnd = true) {
+    command(HD_WRITE_COMMAND, HD_SHIFT_RIGHT, isEnd);
+  }
+
+  inline void moveDisplayLeft(bool isEnd = true) {
+    command(HD_WRITE_COMMAND, HD_SHIFT_LEFT, isEnd);
+  }
+
   inline uint8_t getCursorIndex() { return this->cursorIndex; };
   inline bool isError() { return bool(this->errorStatus); }
   inline void setError(uint8_t err = 1) { this->errorStatus = err; };
