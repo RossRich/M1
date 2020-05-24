@@ -1,6 +1,10 @@
 #if !defined(HD44780_H)
 #define HD44780_H
 
+#include <Arduino.h>
+#include <PCF8574T.h>
+#include <Print.h>
+
 /**
  * Registers
  **/
@@ -60,18 +64,19 @@ const uint8_t MAX_BUF_SUZE = 32;
 inline uint8_t lowBits(uint8_t byte) { return byte & 0xF; }
 inline uint8_t highBits(uint8_t byte) { return byte >> 4; }
 
-class HD44780 {
+class HD44780 : public Print {
 private:
-  PCF8574T *pcf = NULL;
-  uint8_t chars;
-  uint8_t rows;
+  PCF8574T *_pcf = nullptr;
+  uint8_t _chars;
+  uint8_t _rows;
   uint8_t backLight;
-  uint8_t address;
+  uint8_t _address;
   uint8_t cursorIndex;
   uint8_t dBufferCounter;
-  uint8_t dBuffer[];
+  uint8_t dBuffer[MAX_BUF_SUZE];
   int8_t errorStatus;
-  uint8_t screenArea[];
+  uint8_t screenArea[HD_LINE_LENGTH * 2];
+  void init();
 
   inline void WRITE_COMMAND(uint8_t code, bool isEnd = true) {
     command(HD_WRITE_COMMAND, code, isEnd);
@@ -81,23 +86,30 @@ private:
     command(HD_WRITE_DATA, data, isEnd);
   };
 
-  inline void WRITE_TO_POSOTION(uint8_t posotion, bool isEnd = true) {
-    command(HD_WRITE_COMMAND, posotion | HD_WRITE_TO_POSITION, isEnd);
-  };
+  
 
 public:
-  HD44780();
-  HD44780(uint8_t, uint8_t = 16, uint8_t = 2);
-  int8_t init();
-  template <typename T>
-  void print(const T[], uint8_t);
+  HD44780(byte = 16, byte = 2);
+  explicit HD44780(PCF8574T *, byte = 16, byte = 2);
   void command(uint8_t, uint8_t, bool);
+  void command(uint8_t, uint8_t);
   bool isBusy();
   void printBeginPosition(uint8_t, const char[], uint8_t);
+
+  virtual size_t write(byte); // from print
+  virtual size_t write(const uint8_t *buffer, size_t size); // from print
 
   inline void clear(bool isEnd = true) {
     command(HD_WRITE_COMMAND, HD_CLEAR, isEnd);
   };
+
+  inline void on(bool isEnd = true) {
+    command(HD_WRITE_COMMAND, HD_C_DSPL_ON, isEnd);
+  }
+
+  inline void off(bool isEnd = true) {
+    command(HD_WRITE_COMMAND, (~HD_C_DSPL_ON & HD_C_DSPL_ON), isEnd);
+  }
 
   inline void home(bool isEnd = true) {
     command(HD_WRITE_COMMAND, HD_HOME, isEnd);
@@ -127,18 +139,14 @@ public:
     command(HD_WRITE_COMMAND, HD_SHIFT_LEFT, isEnd);
   }
 
+  inline void WRITE_TO_POSOTION(uint8_t posotion, bool isEnd = true) {
+    command(HD_WRITE_COMMAND, posotion | HD_WRITE_TO_POSITION, isEnd);
+  };
+
   inline uint8_t getCursorIndex() { return this->cursorIndex; };
   inline bool isError() { return bool(this->errorStatus); }
   inline void setError(uint8_t err = 1) { this->errorStatus = err; };
   // inline void clearError() { this->errorStatus = 0; };
 };
-
-template <typename T>
-void HD44780::print(const T cst[], uint8_t lenght) {
-  for (uint8_t i = 0; i < lenght; i++) {
-    WRITE_DATA(cst[i], false);
-    isBusy();
-  }
-}
 
 #endif // HD44780_H

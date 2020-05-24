@@ -1,8 +1,13 @@
-#include <Arduino.h>
-#include <PCF8574T.h>
 #include "HD44780.h"
+#include <Arduino.h>
 
-HD44780::HD44780() {}
+/** TODO
+ * without PCF module
+ **/
+HD44780::HD44780(byte chars, byte rows) {
+  _chars = chars;
+  _rows = rows;
+}
 
 /**
  * Begin with PCF8574T
@@ -10,32 +15,36 @@ HD44780::HD44780() {}
  * @param chars = 16
  * @param rows = 2
  **/
-HD44780::HD44780(uint8_t address, uint8_t chars, uint8_t rows) : HD44780() {
-  this->dBufferCounter = 0;
-  this->address = address;
-  this->chars = chars;
-  this->rows = rows;
-  this->errorStatus = 0;
-  this->dBuffer[MAX_BUF_SUZE] = {};
-  this->screenArea[HD_LINE_LENGTH * 2] = {};
-  for (uint8_t i = 0; i < 40; ++i) {
-    this->screenArea[i] = i;
-    this->screenArea[i + 40] = i + 64;
-  }
+HD44780::HD44780(PCF8574T *pcfInstance, byte chars, byte rows)
+    : HD44780(chars, rows) {
+
+  dBufferCounter = 0;
+
+  errorStatus = 0;
+  /* for (uint8_t i = 0; i < 40; ++i) {
+    screenArea[i] = i;
+    screenArea[i + 40] = i + 64;
+  } */
+  if (pcfInstance != nullptr) {
+    _pcf = pcfInstance;
+    init();
+  } else
+    setError(1);
 }
 
-int8_t HD44780::init() {
-  this->pcf = new PCF8574T(address);
-  this->pcf->send(0xF8);
+void HD44780::init() {
+  delayMicroseconds(50);
 
-  delay(1000);
-  this->pcf->send(0x30 | HD_WRITE_COMMAND, false);
-  delayMicroseconds(4100);
-  this->pcf->send(0x30 | HD_WRITE_COMMAND, false);
-  delayMicroseconds(100);
-  this->pcf->send(0x30 | HD_WRITE_COMMAND, false);
+  WRITE_COMMAND(0x30, false);
+  delayMicroseconds(4500);
 
-  this->pcf->send(0x20 | HD_WRITE_COMMAND, false);
+  WRITE_COMMAND(0x30, false);
+  delayMicroseconds(4500);
+
+  WRITE_COMMAND(0x30, false);
+  delayMicroseconds(150);
+
+  WRITE_COMMAND(0x20, false);
 
   isBusy();
 
@@ -58,53 +67,61 @@ int8_t HD44780::init() {
   isBusy();
 
   home();
-
-  return 1;
 }
 
 bool HD44780::isBusy() {
-  Serial.println("------ isBusy -");
+  // Serial.println("------ isBusy -");
   bool busyFlag = true;
   uint8_t receive = 0;
   setError(0);
 
-  this->pcf->send(
-      PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E, false);
+  _pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E, false);
 
-  do {
-    receive = uint8_t(this->pcf->receive(1, false)) & 0xF0;
+  while (busyFlag && !_pcf->isError()) {
+    receive = uint8_t(_pcf->receive(1, false)) & 0xF0;
 
-    pcf->send();
-    pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT);
-    pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E);
-    pcf->commit(false);
+    if (_pcf->isError())
+      break;
 
-    receive |= uint8_t(this->pcf->receive(1, false)) >> 4;
+    _pcf->send();
+    _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT);
+    _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E);
+    _pcf->commit(false);
+
+    if (_pcf->isError())
+      break;
+
+    receive |= uint8_t(_pcf->receive(1, false)) >> 4;
+
+    if (_pcf->isError())
+      break;
 
     busyFlag = bool(bitRead(receive, 7));
 
     if (busyFlag) {
-      pcf->send();
-      pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT);
-      pcf->addToSend(
+      _pcf->send();
+      _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT);
+      _pcf->addToSend(
           PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT | HD_E);
-      pcf->commit(false);
+      _pcf->commit(false);
     } else {
-      // pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, false);
-      pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, true);
+      // _pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, false);
+      _pcf->send(PCF_BEFORE_RECEIVE | HD_READ_STATUS | HD_BACK_LIGHT, true);
     }
 
-    Serial.print("Received: ");
-    Serial.println(receive, HEX);
+    if (_pcf->isError())
+      break;
 
-  } while (busyFlag && !pcf->isError());
+    // Serial.print("Received: ");
+    // Serial.println(receive, HEX);
+  }
 
-  if (pcf->isError())
-    setError();
+  if (_pcf->isError())
+    setError(uint8_t(_pcf->isError()));
   else
     this->cursorIndex = receive;
 
-  Serial.println("------ end -");
+  // Serial.println("------ end -");
   return busyFlag;
 }
 
@@ -112,27 +129,55 @@ void HD44780::command(uint8_t cmnd, uint8_t dataWord, bool isEnd) {
   uint8_t bitsHight = (highBits(dataWord) << 4) | HD_E | HD_BACK_LIGHT | cmnd;
   uint8_t bitsLow = (lowBits(dataWord) << 4) | HD_E | HD_BACK_LIGHT | cmnd;
 
-  Serial.print("Command: ");
-  Serial.println(bitsHight, HEX);
-  Serial.println(bitsLow, HEX);
+  // Serial.print("Command: ");
+  // Serial.println(bitsHight, HEX);
+  // Serial.println(bitsLow, HEX);
 
-  pcf->send();
-  pcf->addToSend(bitsHight);
-  pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | cmnd);
-  pcf->addToSend(bitsLow);
-  pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | HD_READ_STATUS);
-  pcf->commit(isEnd);
+  _pcf->send();
+  _pcf->addToSend(bitsHight);
+  _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | cmnd);
+  _pcf->addToSend(bitsLow);
+  _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | HD_READ_STATUS);
+  setError(_pcf->commit(isEnd));
 
-  setError(uint8_t(pcf->isError()));
+  // setError(uint8_t(_pcf->isError()));
+}
+
+void HD44780::command(uint8_t cmnd, uint8_t dataWord) {
+  uint8_t bitsHight = (highBits(dataWord) << 4) | HD_E | HD_BACK_LIGHT | cmnd;
+  uint8_t bitsLow = (lowBits(dataWord) << 4) | HD_E | HD_BACK_LIGHT | cmnd;
+
+  // Serial.print("Command: ");
+  // Serial.println(bitsHight, HEX);
+  // Serial.println(bitsLow, HEX);
+
+  // _pcf->send();
+  _pcf->addToSend(bitsHight);
+  _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | cmnd);
+  _pcf->addToSend(bitsLow);
+  _pcf->addToSend(PCF_BEFORE_RECEIVE | HD_BACK_LIGHT | HD_READ_STATUS);
+}
+
+size_t HD44780::write(byte data) {
+  _pcf->send();
+  command(HD_WRITE_DATA, data);
+  return _pcf->commit();
+}
+
+size_t HD44780::write(const uint8_t data[], size_t len) {
+  _pcf->send();
+  for (size_t i = 0; i < len; ++i) {
+    command(HD_WRITE_DATA, data[i]);
+  }
+  return _pcf->commit();
 }
 
 void HD44780::printBeginPosition(
     uint8_t position, const char cst[], uint8_t len) {
-
   WRITE_TO_POSOTION(position, false);
   isBusy();
-  for (uint8_t i = 0; i < len; i++) {
-    WRITE_DATA(cst[i], false);
-    isBusy();
-  }
+  _pcf->send();
+  for (uint8_t i = 0; i < len; i++)
+    command(HD_WRITE_DATA, cst[i]);
+  setError(_pcf->commit());
 }
