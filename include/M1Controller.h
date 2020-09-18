@@ -14,7 +14,7 @@ public:
 
   void clickTopButton(bool state);
 
-  void clickDownBotton(bool state);
+  void clickBottomBotton(bool state);
 
   void clickLeftBotton(bool state);
 
@@ -22,13 +22,19 @@ public:
 
   void clickEncoderButton(bool state);
 
-  void changePotValue();
+  void changeRange(int val);
 
   void changeRightJValue(int x, int y);
 
   void changeLeftJValue(int x, int y);
 
   void listenChange();
+
+  void openMenu() {}
+
+  void closeMenu() {}
+
+  void actionItem() {}
 };
 
 #endif // M1_CONTROLLER_H

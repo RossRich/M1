@@ -1,22 +1,19 @@
-#include <Arduino.h>
 #include "Encoder.h"
 
 Encoder::Encoder() {
   s1_ = 2;
   s2_ = 7;
-
   button_ = 10;
-  butLongPressTimer_ = internalTime_ = millis() + ENCODER_BUTTON_LISTEN_PERIOD;
+  debounce_ =  butLongPressTimer_ = internalTime_ = millis() + ENCODER_BUTTON_LISTEN_PERIOD;
   buttonState_ = prewButtonState_ = ENCODER_BUTTON_UNPRESS;
-
   listenerBufferIndex_ = 0;
-
   // butChangeState_ = false;
   butDown_ = false;
   butUp_ = false;
   butClick_ = false;
   butLongPress_ = false;
   isReady_ = false;
+  spinPressure_ = false;
 }
 
 Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin, uint8_t buttonPin) : Encoder() {
@@ -24,20 +21,49 @@ Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin, uint8_t buttonPin) : Encoder() {
   s2_ = s2Pin;
   button_ = buttonPin;
 
-  pinMode(s1Pin, INPUT_PULLUP);
-  pinMode(s2Pin, INPUT_PULLUP);
-  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(s1Pin, INPUT);
+  pinMode(s2Pin, INPUT);
+  pinMode(buttonPin, INPUT);
+}
+
+Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin) : Encoder() {
+  s1_ = s1Pin;
+  s2_ = s2Pin;
+  button_ = 255;
+
+  pinMode(s1Pin, INPUT);
+  pinMode(s2Pin, INPUT);
+  // pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void Encoder::setInterruptRotationListener(void (*uFunc)()) {
-  if ((uFunc != NULL) && (digitalPinToInterrupt(s1_) != NOT_AN_INTERRUPT))
-    attachInterrupt(digitalPinToInterrupt(s1_), uFunc, FALLING);
+  if ((uFunc != nullptr) && (digitalPinToInterrupt(s1_) != NOT_AN_INTERRUPT))
+    attachInterrupt(digitalPinToInterrupt(s1_), uFunc, CHANGE);
 }
 
 void Encoder::listenRotation() {
-  rotationDiraction_ =
-      (digitalRead(s2_)) ? ENCODER_CW_ROTATION : ENCODER_CCW_ROTATION;
-  spinPressure_ = (digitalRead(button_) == ENCODER_BUTTON_PRESS) ? true : false;
+  uint32_t time = micros();
+  if(time < debounce_) return;
+  noInterrupts();
+  debounce_ = time + 10;
+
+  bool ss1 = bool(digitalRead(s1_));
+  bool ss2 = bool(digitalRead(s2_));
+
+  if(!ss1 && ss2)
+    rotationDiraction_ = ENCODER_CW_ROTATION;
+  else if(ss1 && !ss2)
+    rotationDiraction_ = ENCODER_CW_ROTATION;
+  else if(!ss1 && !ss2) 
+    rotationDiraction_ = ENCODER_CCW_ROTATION;
+  else if(ss1 && ss2)
+    rotationDiraction_ = ENCODER_CCW_ROTATION;
+
+  if (button_ != 255)
+    spinPressure_ =
+        (digitalRead(button_) == ENCODER_BUTTON_PRESS) ? true : false;
+  
+  interrupts();
 }
 
 void Encoder::listen() {

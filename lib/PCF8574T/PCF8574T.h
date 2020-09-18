@@ -1,6 +1,7 @@
 #if !defined(PCF8574T_H)
 #define PCF8574T_H
 
+#include <Arduino.h>
 #include <inttypes.h>
 #include <Wire.h>
 
@@ -27,26 +28,15 @@ private:
 public:
   PCF8574T();
   explicit PCF8574T(uint8_t);
-  int8_t receive(uint8_t = 1, bool = true);
-  int8_t send(const uint8_t[], uint8_t, bool = true);
-  int8_t send(uint8_t, bool = true);
-  inline void send() { Wire.beginTransmission(_address); }
-  inline uint8_t addToSend(uint8_t item) {
-    Wire.write(item);
-    setError(Wire.getWriteError());
-    return isError();
-  };
-  inline uint8_t addToSend(const uint8_t array[], uint8_t length) {
-    return Wire.write(array, length);
-  };
-  inline void setError(int8_t err) { errorStatus = err; };
-  inline uint8_t commit(bool isEnd = true) {
-    uint8_t res = Wire.endTransmission((uint8_t)isEnd);
-    if (res > 0)
-      setError(res);
-    return res;
-  };
-  inline int8_t isError() { return errorStatus; };
+  int8_t receive(uint8_t = 1, bool = true, bool = false);
+  void send();
+  void send(const uint8_t[], uint8_t, bool = true);
+  void send(uint8_t, bool = true);
+  uint8_t addToSend(uint8_t item);
+  uint8_t addToSend(const uint8_t array[], uint8_t length);
+  uint8_t commit(bool isEnd = true);
+  inline void setError(int8_t err = 1) { errorStatus = err; };
+  inline uint8_t isError() { return errorStatus; };
 };
 
 #endif // PCF8574T_H

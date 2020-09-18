@@ -5,17 +5,23 @@ M1View::M1View(M1Controller *c, M1Model *m) : controller(c), model(m) {
   model->registerObserver(this);
   model->init();
   Serial.println(F("Model inint"));
-  pcfDriver = new PCF8574T;
-  Serial.println(F("PCF ok"));
-  display = new HD44780(pcfDriver);
+  
+  display = componentFactory.createDispaly();
   Serial.println(F("Display ok"));
+
   leftJoystick = componentFactory.createLeftJoystick();
   rightJoystick = componentFactory.createRightJoystick();
   Serial.println(F("Create joystick ok"));
-  topButton = componentFactory.createRightButton();
+
+  topButton = componentFactory.createTopButton();
   leftButton = componentFactory.createLeftButton();
+  bottomButton = componentFactory.createBottomButton();
+  rightButton = componentFactory.createRightButton();
   encoderButton = componentFactory.createEncButton();
   Serial.println(F("Create buttons ok"));
+
+  rangePow = componentFactory.createRangePower();
+  Serial.println(F("RangePow ok"));
 
   Serial.println(F("M1View ok"));
 }
@@ -25,8 +31,14 @@ void M1View::checkButons() {
   topButton->check();
   controller->clickTopButton(topButton->isClicked());
 
+  bottomButton->check();
+  controller->clickBottomBotton(bottomButton->isClicked());
+
   leftButton->check();
   controller->clickLeftBotton(leftButton->isClicked());
+
+  rightButton->check();
+  controller->clickRightButton(rightButton->isClicked());
 
   encoderButton->check();
   controller->clickEncoderButton(encoderButton->isClicked());
@@ -34,9 +46,15 @@ void M1View::checkButons() {
 
 void M1View::checkJoysticks() {
   leftJoystick->check();
-  rightJoystick->check();
   controller->changeLeftJValue(leftJoystick->getX(), leftJoystick->getY());
+
+  rightJoystick->check();
   controller->changeRightJValue(rightJoystick->getX(), rightJoystick->getY());
+}
+
+void M1View::checkRange() {
+  rangePow->check();
+  controller->changeRange(rangePow->getValue());
 }
 
 void M1View::print(int val, int size) { Serial.println(val); }
@@ -48,21 +66,45 @@ void M1View::print(const char *msg, int size) {
   Serial.print(display->isError());
 }
 
-void M1View::checkPot() {}
-
 void M1View::update() {
   M1JoystickData *j1 = model->getJoystick1();
   M1JoystickData *j2 = model->getJoystick2();
 
-  String sj1(j1->x);
-  sj1 += " ";
-  sj1 += j1->y;
-  sj1 += " ";
+  String j1m;
+  j1m += "x: ";
+  j1m += j1->x;
+  j1m += " ";
+  j1m += "y: ";
+  j1m += j1->y;
+  j1m += "  ";
 
-  // sj1 += j2->x;
-  // sj1 += " ";
-  // sj1 += j2->y;
-  // sj1 += "\n";
-  // Serial.println(sj1);
-  print(sj1.c_str(), sj1.length());
+  String j2m;
+  j2m += "x: ";
+  j2m += j2->x;
+  j2m += " ";
+  j2m += "y: ";
+  j2m += j2->y;
+  j2m += "  ";
+
+  String bT("bT: ");
+  bT += model->getButTop();
+  bT += "  ";
+
+  String bR("bR: ");
+  bR += model->getButRight();
+  bR += "  ";
+
+  String bL("bL: ");
+  bL += model->getButLeft();
+  bL += "  ";
+
+  String bB("bB: ");
+  bB += model->getButBottom();
+  bB += "  ";
+
+  String bE("bE: ");
+  bE += model->getButEnc();
+  bE += "  ";
+
+  Serial.println(j1m + j2m + bT + bB + bL + bR + bE);
 }

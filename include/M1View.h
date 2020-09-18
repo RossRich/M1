@@ -41,6 +41,7 @@ private:
   VButton *rightButton;
   VButton *encoderButton; // button for select
   M1ViewFactory componentFactory;
+  VRange *rangePow;
   PCF8574T *pcfDriver;
   HD44780 *display;
 
@@ -50,7 +51,7 @@ public:
 
   void checkButons();
   void checkJoysticks();
-  void checkPot();
+  void checkRange();
   void update();
   void print(const char *msg, int size);
   void print(int val, int size);

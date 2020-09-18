@@ -15,10 +15,14 @@
 #define JOYSTICK2_Y A2
 #define JOYSTICK2_KEY 7
 
-#include "DisplayDriver.h"
+#define RANGE_POWER A7
+
+#include "M1Configuration.h"
 #include <AnalogButton.h>
 #include <Joystick.h>
 #include <Potentiometer.h>
+#include <PCF8574T.h>
+#include <HD44780.h>
 
 class VButton {
 private:
@@ -43,6 +47,26 @@ public:
   virtual int getY() = 0;
 };
 
+class VRange {
+private:
+public:
+  VRange() {}
+  virtual ~VRange() {}
+  void check() {}
+  int getValue() { return 0; }
+};
+
+class M1ViewPowRange : public VRange {
+private:
+  Potentiometer *powerRange;
+
+public:
+  M1ViewPowRange() { powerRange = new Potentiometer(RANGE_POWER, 0, 255); }
+  ~M1ViewPowRange() {}
+  void check() { powerRange->listen(); }
+  int getValue() { return powerRange->value(); }
+};
+
 class M1ViewButtonTop : public VButton {
 private:
   AnalogButtons *top;
@@ -56,6 +80,19 @@ public:
   void check() override { top->listen(); };
 };
 
+class M1ViewButtonBottom : public VButton {
+private:
+  AnalogButtons *bottom;
+
+public:
+  M1ViewButtonBottom() { bottom = new AnalogButtons(A6, ANALOG_BUTTON_DOWN); }
+  ~M1ViewButtonBottom() {}
+
+  bool isPressed() override { return bottom->getVal(); };
+  bool isClicked() override { return bottom->getVal(); };
+  void check() override { bottom->listen(); };
+};
+
 class M1ViewButtonLeft : public VButton {
 private:
   AnalogButtons *left;
@@ -67,6 +104,19 @@ public:
   bool isPressed() override { return left->getVal(); };
   bool isClicked() override { return left->getVal(); };
   void check() override { left->listen(); };
+};
+
+class M1ViewButtonRight : public VButton {
+private:
+  AnalogButtons *right;
+
+public:
+  M1ViewButtonRight() { right = new AnalogButtons(A6, ANALOG_BUTTON_RIGHT); }
+  ~M1ViewButtonRight() {}
+
+  bool isPressed() override { return right->getVal(); };
+  bool isClicked() override { return right->getVal(); };
+  void check() override { right->listen(); };
 };
 
 class M1ViewButtonEnc : public VButton {
@@ -87,7 +137,9 @@ private:
   Joystick *leftJoystick;
 
 public:
-  M1ViewLJ() { leftJoystick = new Joystick(JOYSTICK1_X, JOYSTICK1_Y, JOYSTICK1_KEY); }
+  M1ViewLJ() {
+    leftJoystick = new Joystick(JOYSTICK1_X, JOYSTICK1_Y, JOYSTICK1_KEY);
+  }
   ~M1ViewLJ() {}
 
   void check() override { leftJoystick->listen(); }
@@ -100,7 +152,9 @@ private:
   Joystick *rightJoystick;
 
 public:
-  M1ViewRJ() { rightJoystick = new Joystick(JOYSTICK2_X, JOYSTICK2_Y, JOYSTICK2_KEY); }
+  M1ViewRJ() {
+    rightJoystick = new Joystick(JOYSTICK2_X, JOYSTICK2_Y, JOYSTICK2_KEY);
+  }
   ~M1ViewRJ() {}
 
   void check() override { rightJoystick->listen(); }
@@ -117,10 +171,12 @@ public:
   VJoystick *createLeftJoystick() { return new M1ViewLJ; }
   VJoystick *createRightJoystick() { return new M1ViewRJ; }
   VButton *createTopButton() { return new M1ViewButtonTop; }
-  VButton *createBottomButton() { return new M1ViewButtonTop; }
+  VButton *createBottomButton() { return new M1ViewButtonBottom; }
   VButton *createLeftButton() { return new M1ViewButtonLeft; }
-  VButton *createRightButton() { return new M1ViewButtonTop; }
+  VButton *createRightButton() { return new M1ViewButtonRight; }
   VButton *createEncButton() { return new M1ViewButtonEnc; }
+  VRange *createRangePower() { return new M1ViewPowRange; }
+  HD44780 *createDispaly() { return new HD44780(new PCF8574T); }
 };
 
 #endif // M1_VIEW_FACTORY_H

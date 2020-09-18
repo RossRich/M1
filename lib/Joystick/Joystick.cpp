@@ -7,38 +7,40 @@ Joystick::Joystick() {
 
   keyStatus_ = keyClick_ = prewKeyStatus_ = false;
 
-  maxPos_ = 1023;
+  maxPos_ = 255;
   minPos_ = 0;
-  listenPeriod_ = millis() + J_LISTEN_PERIOD;
 
   init();
 }
 
-Joystick::Joystick(uint8_t vrx, uint8_t vry, uint8_t key) : Joystick() {
+Joystick::Joystick(uint8_t vrx, uint8_t vry, uint8_t key) {
   vrxPin_ = vrx;
   vryPin_ = vry;
   keyPin_ = key;
+
+  maxPos_ = 255;
+  minPos_ = 0;
 
   init();
 }
 
 Joystick::Joystick(
-    uint8_t vrx, uint8_t vry, uint8_t key, uint16_t minPosition,
-    uint16_t maxPosition)
-    : Joystick(vrx, vry, key) {
+    uint8_t vrx, uint8_t vry, uint16_t minPosition, uint16_t maxPosition)
+    : Joystick(vrx, vry, 0) {
   minPos_ = minPosition;
   maxPos_ = maxPosition;
 
   init();
 }
 
-void Joystick::init() { pinMode(keyPin_, INPUT_PULLUP); }
+void Joystick::init() {
+  pinMode(keyPin_, INPUT_PULLUP);
+  pinMode(vrxPin_, INPUT);
+  pinMode(vryPin_, INPUT);
+}
 
 void Joystick::listen() {
-  internalTime_ = millis();
-
-  if (listenPeriod_ <= internalTime_) {
-    listenPeriod_ += J_LISTEN_PERIOD;
+  if (millis() - listenPeriod_ >= J_LISTEN_PERIOD) {
 
     keyStatus_ = digitalRead(keyPin_);
     bool changeKeyStatus = keyStatus_ != prewKeyStatus_;
@@ -59,6 +61,7 @@ void Joystick::listen() {
     }
 
     prewKeyStatus_ = keyStatus_;
+    listenPeriod_ = millis();
   }
 }
 

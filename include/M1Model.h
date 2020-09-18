@@ -32,13 +32,14 @@ struct M1Data {
   bool bL;
   bool bR;
   bool bE;
+  int range;
 };
 
 class M1Model {
 private:
   RF24 *radio = nullptr;
-  M1Data data;
   Observer **observers = nullptr;
+  M1Data data;
   int observerCount = 0;
 
 public:
@@ -72,37 +73,43 @@ public:
   }
   inline M1JoystickData *getJoystick2() { return &data.j2; }
 
-  inline void setButTop(bool state) {
+  void setButTop(bool state) {
     data.bT = state;
     notifyObservers();
   }
   inline bool getButTop() { return data.bT; }
 
-  inline void setButBottom(bool state) {
+  void setButBottom(bool state) {
     data.bB = state;
     notifyObservers();
   }
   inline bool getButBottom() { return data.bB; }
 
-  inline void setButLeft(bool state) {
+  void setButLeft(bool state) {
     data.bL = state;
     notifyObservers();
   }
   inline bool getButLeft() { return data.bL; }
 
-  inline void setButRight(bool state) {
+  void setButRight(bool state) {
     data.bR = state;
     notifyObservers();
   }
   inline bool getButRight() { return data.bR; }
 
-  inline void setButEnc(bool state) {
+  void setButEnc(bool state) {
     data.bE = state;
     notifyObservers();
   }
   inline bool getButEnc() { return data.bE; }
 
-  inline void registerObserver(Observer *observer) {
+  void setRange(int range) {
+    data.range = range;
+    notifyObservers();
+  }
+  inline int getRange() { return data.range; }
+
+  void registerObserver(Observer *observer) {
     if (observerCount == OBSERVERS_COUNT)
       return;
 

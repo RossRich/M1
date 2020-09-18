@@ -1,6 +1,8 @@
 #if !defined(ENCODER_H_)
 #define ENCODER_H_
 
+#include <Arduino.h>
+
 #define ENCODER_CW_ROTATION 1
 #define ENCODER_CCW_ROTATION -1
 #define ENCODER_BUTTON_PRESS 0
@@ -38,10 +40,12 @@ private:
   void spinPressureHendler(void (*)());
   uint8_t listenerBufferIndex_;
   void (*listenerArray[MAX_NUM_LISTENER])();
+  volatile uint32_t debounce_;
 
 public:
   Encoder();
   Encoder(uint8_t, uint8_t, uint8_t);
+  Encoder(uint8_t, uint8_t);
   // Encoder(uint8_t, uint8_t, uint8_t, void (*)());
   void setClickListener(void (*)());
   void setLongClickListener(void (*)());
