@@ -87,7 +87,8 @@ private:
   };
 
 public:
-  HD44780() {};
+  HD44780() {}
+  ~HD44780() {}
   explicit HD44780(PCF8574T * = nullptr, byte = 16, byte = 2);
   void command(uint8_t, uint8_t, bool);
   void command(uint8_t, uint8_t);

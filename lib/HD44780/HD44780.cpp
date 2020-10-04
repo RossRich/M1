@@ -197,7 +197,7 @@ void HD44780::printBeginPosition(
 void HD44780::setCursor(uint8_t col, uint8_t row) {
   // row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
   if (row >= 2) {
-    WRITE_TO_POSOTION(((uint8_t)0x14 + col), false);
+    WRITE_TO_POSOTION(col + 64, false);
   } else {
     WRITE_TO_POSOTION(col, false);
   }

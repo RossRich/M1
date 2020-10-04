@@ -17,52 +17,22 @@
 
 #define RANGE_POWER A7
 
+#define SCREEN_SCROLL_DOWN 0
+#define SCREEN_SCROLL_UP 1
+
 #include "M1Configuration.h"
+#include "M1ViewComponents.h"
 #include <AnalogButton.h>
 #include <Joystick.h>
 #include <Potentiometer.h>
-#include <PCF8574T.h>
-#include <HD44780.h>
 
-class VButton {
-private:
-public:
-  VButton() {}
-  virtual ~VButton() {}
-  virtual bool isPressed() = 0;
-  virtual bool isClicked() = 0;
-  virtual void check() = 0;
-};
-
-class VJoystick {
-private:
-  // VButton *jButton;
-
-public:
-  // VJoystick(VButton *jb) : jButton(jb) {}
-  VJoystick() {}
-  virtual ~VJoystick() {}
-  virtual void check() = 0;
-  virtual int getX() = 0;
-  virtual int getY() = 0;
-};
-
-class VRange {
-private:
-public:
-  VRange() {}
-  virtual ~VRange() {}
-  void check() {}
-  int getValue() { return 0; }
-};
-
-class M1ViewPowRange : public VRange {
+class M1ViewRangePow : public VRange {
 private:
   Potentiometer *powerRange;
 
 public:
-  M1ViewPowRange() { powerRange = new Potentiometer(RANGE_POWER, 0, 255); }
-  ~M1ViewPowRange() {}
+  M1ViewRangePow() { powerRange = new Potentiometer(RANGE_POWER, 0, 255); }
+  ~M1ViewRangePow() {}
   void check() { powerRange->listen(); }
   int getValue() { return powerRange->value(); }
 };
@@ -132,30 +102,30 @@ public:
   void check() override { enc->listen(); };
 };
 
-class M1ViewLJ : public VJoystick {
+class M1ViewJL : public VJoystick {
 private:
   Joystick *leftJoystick;
 
 public:
-  M1ViewLJ() {
+  M1ViewJL() {
     leftJoystick = new Joystick(JOYSTICK1_X, JOYSTICK1_Y, JOYSTICK1_KEY);
   }
-  ~M1ViewLJ() {}
+  ~M1ViewJL() {}
 
   void check() override { leftJoystick->listen(); }
   int getX() override { return leftJoystick->x(); }
   int getY() override { return leftJoystick->y(); }
 };
 
-class M1ViewRJ : public VJoystick {
+class M1ViewJR : public VJoystick {
 private:
   Joystick *rightJoystick;
 
 public:
-  M1ViewRJ() {
+  M1ViewJR() {
     rightJoystick = new Joystick(JOYSTICK2_X, JOYSTICK2_Y, JOYSTICK2_KEY);
   }
-  ~M1ViewRJ() {}
+  ~M1ViewJR() {}
 
   void check() override { rightJoystick->listen(); }
   int getX() override { return rightJoystick->x(); }
@@ -168,15 +138,15 @@ public:
   M1ViewFactory() {}
   ~M1ViewFactory() {}
 
-  VJoystick *createLeftJoystick() { return new M1ViewLJ; }
-  VJoystick *createRightJoystick() { return new M1ViewRJ; }
+  VJoystick *createLeftJoystick() { return new M1ViewJL; }
+  VJoystick *createRightJoystick() { return new M1ViewJR; }
   VButton *createTopButton() { return new M1ViewButtonTop; }
   VButton *createBottomButton() { return new M1ViewButtonBottom; }
   VButton *createLeftButton() { return new M1ViewButtonLeft; }
   VButton *createRightButton() { return new M1ViewButtonRight; }
   VButton *createEncButton() { return new M1ViewButtonEnc; }
-  VRange *createRangePower() { return new M1ViewPowRange; }
-  HD44780 *createDispaly() { return new HD44780(new PCF8574T); }
+  VRange *createRangePower() { return new M1ViewRangePow; }
+  Display *createDispaly() { return new Display; }
 };
 
 #endif // M1_VIEW_FACTORY_H

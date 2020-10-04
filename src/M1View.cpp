@@ -1,14 +1,25 @@
 #include "M1View.h"
 
+/**
+ * TODO: Create InfoDisplay, MenuDislay to Fctory class
+ * TODO: Factory of DroemDislay, RoverDisplay
+ * TODO: Display array protection
+ * TODO: Frame array protection
+ **/
+
 M1View::M1View(M1Controller *c, M1Model *m) : controller(c), model(m) {
   Serial.println(F("M1View constructor"));
   model->registerObserver(this);
   model->init();
   Serial.println(F("Model inint"));
-  
-  display = componentFactory.createDispaly();
-  Serial.println(F("Display ok"));
 
+  display = componentFactory.createDispaly();
+  viewDisplay = new M1ViewDisplay(display);
+  viewDisplay->addDisplay(new InfoScreen(display));
+  viewDisplay->start();
+
+  
+  Serial.println(F("Display ok"));
   leftJoystick = componentFactory.createLeftJoystick();
   rightJoystick = componentFactory.createRightJoystick();
   Serial.println(F("Create joystick ok"));
@@ -57,14 +68,11 @@ void M1View::checkRange() {
   controller->changeRange(rangePow->getValue());
 }
 
-void M1View::print(int val, int size) { Serial.println(val); }
+void M1View::openScreen() {}
 
-void M1View::print(const char *msg, int size) {
-  Serial.println(msg);
-  display->clear();
-  display->printBeginPosition(0, msg, size);
-  Serial.print(display->isError());
-}
+void M1View::print(int val, int size) {}
+
+void M1View::print(const char *msg, int size) {}
 
 void M1View::update() {
   M1JoystickData *j1 = model->getJoystick1();
@@ -105,6 +113,8 @@ void M1View::update() {
   String bE("bE: ");
   bE += model->getButEnc();
   bE += "  ";
+
+  viewDisplay->update();
 
   Serial.println(j1m + j2m + bT + bB + bL + bR + bE);
 }
