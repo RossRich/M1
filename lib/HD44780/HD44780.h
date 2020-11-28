@@ -89,7 +89,7 @@ private:
 public:
   HD44780() {}
   ~HD44780() {}
-  explicit HD44780(PCF8574T * = nullptr, byte = 16, byte = 2);
+  explicit HD44780(PCF8574T *, byte = 16, byte = 2);
   void command(uint8_t, uint8_t, bool);
   void command(uint8_t, uint8_t);
   bool isBusy();
@@ -146,6 +146,14 @@ public:
   inline void WRITE_TO_POSOTION(uint8_t posotion, bool isEnd = true) {
     command(HD_WRITE_COMMAND, posotion | HD_WRITE_TO_POSITION, isEnd);
   };
+
+  inline uint8_t getWidth() const {
+    return _chars;
+  }
+
+  inline uint8_t getHeight() const {
+    return _rows;
+  }
 
   inline uint8_t getCursorIndex() { return cursorIndex; };
   inline byte isError() { return errorStatus; }

@@ -25,7 +25,7 @@
 #define VIEW_JOYSTICKS_COUNT 2
 
 #include "M1Model.h"
-#include "M1ViewFactory.h"
+#include "DronInterface.h"
 
 class M1Controller;
 
@@ -42,10 +42,8 @@ private:
   VButton *encoderButton; // button for select
   M1ViewFactory componentFactory;
   VRange *rangePow;
-  Display *display;
-  M1ViewDisplay *viewDisplay;
-  VDisplay *infoDisplay;
-
+  MenuManager *viewManager;
+  DronInterface *di;
 
 public:
   M1View(M1Controller *c, M1Model *m);

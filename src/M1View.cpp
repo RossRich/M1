@@ -13,12 +13,11 @@ M1View::M1View(M1Controller *c, M1Model *m) : controller(c), model(m) {
   model->init();
   Serial.println(F("Model inint"));
 
-  display = componentFactory.createDispaly();
-  viewDisplay = new M1ViewDisplay(display);
-  viewDisplay->addDisplay(new InfoScreen(display));
-  viewDisplay->start();
+  di = new DronInterface(componentFactory.createDispaly());
+  viewManager = di->init();
+  viewManager->print();
+  Serial.println(F("Dron interface inited"));
 
-  
   Serial.println(F("Display ok"));
   leftJoystick = componentFactory.createLeftJoystick();
   rightJoystick = componentFactory.createRightJoystick();
@@ -114,7 +113,19 @@ void M1View::update() {
   bE += model->getButEnc();
   bE += "  ";
 
-  viewDisplay->update();
+  if (model->getButEnc()) {
+    viewManager->select();
+    viewManager->print();
+  }
+  
+  if (model->getButTop()) {
+    viewManager->scroll(SCROLL_TOP);
+    viewManager->print();
+  }
 
+  if (model->getButBottom()) {
+    viewManager->scroll(SCROLL_BOTTOM);
+    viewManager->print();
+  }
   Serial.println(j1m + j2m + bT + bB + bL + bR + bE);
 }
