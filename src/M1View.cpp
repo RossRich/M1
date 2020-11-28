@@ -117,7 +117,7 @@ void M1View::update() {
     viewManager->select();
     viewManager->print();
   }
-  
+
   if (model->getButTop()) {
     viewManager->scroll(SCROLL_TOP);
     viewManager->print();
@@ -127,5 +127,16 @@ void M1View::update() {
     viewManager->scroll(SCROLL_BOTTOM);
     viewManager->print();
   }
+
+  if (model->getButLeft()) {
+    viewManager->sweep(SWEEP_LEFT);
+    viewManager->print();
+  }
+
+  if (model->getButRight()) {
+    viewManager->sweep(SWEEP_RIGHT);
+    viewManager->print();
+  }
+
   Serial.println(j1m + j2m + bT + bB + bL + bR + bE);
 }
