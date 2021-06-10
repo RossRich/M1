@@ -17,6 +17,7 @@ private:
   uint16_t _maxADC;
   uint8_t _potPin;
   int16_t _signalOut;
+  int16_t _penSignalOut;
   bool _isFilterEnable;
   uint32_t _listenPeriod;
   int16_t _maxOut;
@@ -83,6 +84,11 @@ public:
    * Manual setup work ADC range
    **/
   void setupADC();
+
+
+  inline int16_t difVal() {
+    return _signalOut - _penSignalOut;
+  }
 };
 
 #endif // POTENTIOMETR_H_

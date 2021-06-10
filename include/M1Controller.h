@@ -5,8 +5,11 @@
 
 class M1Controller {
 private:
-  M1View *m_m1View = nullptr;
-  M1Model *m_m1Model = nullptr;
+  M1View *_mView = nullptr;
+  M1Model *_mModel = nullptr;
+  bool _mArmedTimer = false;
+
+  void init();
 
 public:
   M1Controller(M1Model *m1Model);
@@ -35,6 +38,11 @@ public:
   void closeMenu() {}
 
   void actionItem() {}
+
+  /** TODO
+   *  Common error handler
+   **/
+  void checkError() {}
 };
 
 #endif // M1_CONTROLLER_H

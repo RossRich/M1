@@ -1,7 +1,8 @@
 #if !defined(DRON_INTERFACE_H)
 #define DRON_INTERFACE_H
 
-#include "M1ViewFactory.h"
+#include <ArduMenu.h>
+#include "Display.h"
 
 class DronInterface {
 private:

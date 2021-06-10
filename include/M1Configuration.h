@@ -1,6 +1,0 @@
-#if !defined(M1_CONFIGURATION_H)
-#define M1_CONFIGURATION_H
-
-#define M1_DEBUG
-
-#endif // M1_CONFIGURATION_H

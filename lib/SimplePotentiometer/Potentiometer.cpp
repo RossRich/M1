@@ -21,6 +21,7 @@ Potentiometer::Potentiometer(
 
 void Potentiometer::listen() {
   if (millis() - _listenPeriod >= DEFAULT_LISTEN_PERIOD) {
+    _penSignalOut = _signalOut;
     _signalOut =
         constrain(static_cast<uint16_t>(analogRead(_potPin)), _minADC, _maxADC);
     _signalOut = map(_signalOut, _minADC, _maxADC, _minOut, _maxOut);
@@ -51,27 +52,4 @@ void Potentiometer::setADCrange(uint16_t *minADC, uint16_t *maxADC) {
   maxADC = &_maxADC;
 }
 
-void Potentiometer::setupADC() {
-    Serial.flush();
-    
-    while (!Serial.available()) {
-      Serial.println(analogRead(_potPin));
-      delay(500);
-    }
-
-    int16_t vals[2] = {};
-    char buf[36] = {};
-    byte i = 0;
-
-    Serial.readBytes(buf, 35);
-
-    char *command = strtok(buf, ";");
-    while (command != 0) {
-      vals[i] = atoi(command);
-      ++i;
-      command = strtok(0, ";");
-    }
-
-    setADCrange(vals[0], vals[1]);
-  }
-
+void Potentiometer::setupADC() { return; }

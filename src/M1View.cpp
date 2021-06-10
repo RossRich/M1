@@ -1,142 +1,124 @@
 #include "M1View.h"
 
-/**
- * TODO: Create InfoDisplay, MenuDislay to Fctory class
- * TODO: Factory of DroemDislay, RoverDisplay
- * TODO: Display array protection
- * TODO: Frame array protection
- **/
-
-M1View::M1View(M1Controller *c, M1Model *m) : controller(c), model(m) {
+M1View::M1View(M1Controller *c, M1Model *m) : _mController(c), model(m) {
   Serial.println(F("M1View constructor"));
-  model->registerObserver(this);
-  model->init();
-  Serial.println(F("Model inint"));
-
-  di = new DronInterface(componentFactory.createDispaly());
-  viewManager = di->init();
-  viewManager->print();
-  Serial.println(F("Dron interface inited"));
-
-  Serial.println(F("Display ok"));
-  leftJoystick = componentFactory.createLeftJoystick();
-  rightJoystick = componentFactory.createRightJoystick();
-  Serial.println(F("Create joystick ok"));
-
-  topButton = componentFactory.createTopButton();
-  leftButton = componentFactory.createLeftButton();
-  bottomButton = componentFactory.createBottomButton();
-  rightButton = componentFactory.createRightButton();
-  encoderButton = componentFactory.createEncButton();
-  Serial.println(F("Create buttons ok"));
-
-  rangePow = componentFactory.createRangePower();
-  Serial.println(F("RangePow ok"));
-
-  Serial.println(F("M1View ok"));
+  init();
 }
+
+void M1View::init() {
+  model->registerObserver(this);
+  _mDisplayDriver = new Display;
+  _mDi = new DronInterface(_mDisplayDriver);
+
+  _mI = new Input();
+  _mI->subscribe(_mI);
+  _mI->setActions(this);
+
+  viewManager = _mDi->init();
+  viewManager->print();
+
+  timer = millis();
+  timer1 = timer;
+}
+
 M1View::~M1View() {}
 
-void M1View::checkButons() {
-  topButton->check();
-  controller->clickTopButton(topButton->isClicked());
+void M1View::listen() {
+  uint32_t m = millis();
 
-  bottomButton->check();
-  controller->clickBottomBotton(bottomButton->isClicked());
-
-  leftButton->check();
-  controller->clickLeftBotton(leftButton->isClicked());
-
-  rightButton->check();
-  controller->clickRightButton(rightButton->isClicked());
-
-  encoderButton->check();
-  controller->clickEncoderButton(encoderButton->isClicked());
-}
-
-void M1View::checkJoysticks() {
-  leftJoystick->check();
-  controller->changeLeftJValue(leftJoystick->getX(), leftJoystick->getY());
-
-  rightJoystick->check();
-  controller->changeRightJValue(rightJoystick->getX(), rightJoystick->getY());
-}
-
-void M1View::checkRange() {
-  rangePow->check();
-  controller->changeRange(rangePow->getValue());
-}
-
-void M1View::openScreen() {}
-
-void M1View::print(int val, int size) {}
-
-void M1View::print(const char *msg, int size) {}
-
-void M1View::update() {
-  M1JoystickData *j1 = model->getJoystick1();
-  M1JoystickData *j2 = model->getJoystick2();
-
-  String j1m;
-  j1m += "x: ";
-  j1m += j1->x;
-  j1m += " ";
-  j1m += "y: ";
-  j1m += j1->y;
-  j1m += "  ";
-
-  String j2m;
-  j2m += "x: ";
-  j2m += j2->x;
-  j2m += " ";
-  j2m += "y: ";
-  j2m += j2->y;
-  j2m += "  ";
-
-  String bT("bT: ");
-  bT += model->getButTop();
-  bT += "  ";
-
-  String bR("bR: ");
-  bR += model->getButRight();
-  bR += "  ";
-
-  String bL("bL: ");
-  bL += model->getButLeft();
-  bL += "  ";
-
-  String bB("bB: ");
-  bB += model->getButBottom();
-  bB += "  ";
-
-  String bE("bE: ");
-  bE += model->getButEnc();
-  bE += "  ";
-
-  if (model->getButEnc()) {
-    viewManager->select();
-    viewManager->print();
+  if (m - timer >= 10) {
+    _mDisplayDriver->draw();
+    timer = millis();
   }
 
-  if (model->getButTop()) {
-    viewManager->scroll(SCROLL_TOP);
-    viewManager->print();
+  if (m - timer1 >= 250) {
+    _mI->check();
+    timer1 = millis();
   }
+}
 
-  if (model->getButBottom()) {
+void M1View::leftBut(INPUT_EVENTS e) {
+  if (e == INPUT_EVENTS::CLICK)
+    Serial.println("Left:Click");
+
+  if (e == INPUT_EVENTS::PRESS)
+    Serial.println("Left:Press");
+}
+
+void M1View::rightBut(INPUT_EVENTS e) {
+  if (e == INPUT_EVENTS::CLICK)
+    Serial.println("Right:Click");
+
+  if (e == INPUT_EVENTS::PRESS)
+    Serial.println("Right:Press");
+}
+
+void M1View::bottomBut(INPUT_EVENTS e) {
+  Serial.println("bottomBut");
+  if (e == INPUT_EVENTS::CLICK) {
     viewManager->scroll(SCROLL_BOTTOM);
     viewManager->print();
   }
+}
 
-  if (model->getButLeft()) {
-    viewManager->sweep(SWEEP_LEFT);
+void M1View::topBut(INPUT_EVENTS e) {
+  Serial.println("topBut");
+  if (e == INPUT_EVENTS::CLICK) {
+    Serial.println("Right:Press");
+    viewManager->scroll(SCROLL_TOP);
     viewManager->print();
   }
+}
 
-  if (model->getButRight()) {
-    viewManager->sweep(SWEEP_RIGHT);
+void M1View::encBut(INPUT_EVENTS e) {
+  if (e == INPUT_EVENTS::CLICK) {
+    Serial.println("encBut:Click");
+    viewManager->select();
     viewManager->print();
   }
+}
 
-  Serial.println(j1m + j2m + bT + bB + bL + bR + bE);
+void M1View::joyLeft(INPUT_EVENTS e, int16_t x, int16_t y) {
+  Serial.print("Joy:Left: ");
+  Serial.print(x);
+  Serial.print('\t');
+  Serial.println(y);
+  _mController->changeLeftJValue(x, y);
+}
+
+void M1View::joyRight(INPUT_EVENTS e, int16_t x, int16_t y) {
+  Serial.print("Joy:Right: ");
+  Serial.print(x);
+  Serial.print('\t');
+  Serial.println(y);
+  _mController->changeRightJValue(x, y);
+}
+
+void M1View::joyLeftButton(INPUT_EVENTS e) {
+  Serial.print("JBut: ");
+  if (e == INPUT_EVENTS::CLICK)
+    Serial.println("CLICK");
+  else
+    Serial.println("PRESS");
+}
+
+void M1View::joyRightButton(INPUT_EVENTS e) {
+  Serial.print("JBut: ");
+  if (e == INPUT_EVENTS::CLICK)
+    Serial.println("CLICK");
+  else
+    Serial.println("PRESS");
+}
+
+void M1View::range(INPUT_EVENTS e, int16_t val) {
+  Serial.print("Range: ");
+  Serial.println(val);
+}
+
+void M1View::encoderRot(INPUT_EVENTS e, int8_t dir) {
+  Serial.print("Enc: ");
+  if (dir == ENCODER_CCW_ROTATION)
+    Serial.println("DOWN");
+  else
+    Serial.println("TOP");
 }

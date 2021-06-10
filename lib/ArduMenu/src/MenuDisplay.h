@@ -9,13 +9,10 @@ struct Point2 {
 };
 
 class MenuDisplay {
-private:
 public:
-  MenuDisplay() {}
-  virtual ~MenuDisplay() = 0;
-
-  virtual void print(const char *st) {}
-  virtual void print(uint8_t val) {}
+  virtual ~MenuDisplay() {}
+  virtual void print(const char *st) = 0;
+  virtual void print(uint8_t val) = 0;
   virtual uint8_t getHeight() const = 0;
   virtual uint8_t getWidth() const = 0;
   virtual void setCursor(uint8_t x, uint8_t y) = 0;

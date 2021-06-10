@@ -7,7 +7,8 @@
 #define RX_NRF "RNode"
 #define OBSERVERS_COUNT 5u
 
-#include <RF24.h>
+#include <Arduino.h>
+// #include <RF24.h>
 
 class Observer {
 private:
@@ -37,30 +38,34 @@ struct M1Data {
 
 class M1Model {
 private:
-  RF24 *radio = nullptr;
+  // RF24 *radio = nullptr;
   Observer **observers = nullptr;
   M1Data data;
   int observerCount = 0;
 
 public:
   M1Model() {
-    radio = new RF24(RF24_CE, RF24_CSN);
+    // radio = new RF24(RF24_CE, RF24_CSN);
     observers = new Observer *[OBSERVERS_COUNT];
   }
   ~M1Model() {}
 
   void init() {
-    radio->begin();
-    radio->setPALevel(RF24_PA_MIN);
+    Serial.println(F("Model init"));
+    // radio->begin();
+    // radio->setPALevel(RF24_PA_MIN);
     // radio->openWritingPipe(reinterpret_cast<const uint8_t *>(TX_NRF));
     // radio->maskIRQ(1, 1, 1);
     // attachInterrupt(digitalPinToInterrupt(3), nrfInterrupt, LOW);
   }
 
+  // inline void setState(M1_STATE s) { _mState = s; }
+
   void setJoystick1(int x, int y, int sw) {
     data.j1.x = x;
     data.j1.y = y;
     data.j1.sw = sw;
+
     notifyObservers();
   }
   inline M1JoystickData *getJoystick1() { return &data.j1; }
@@ -69,6 +74,7 @@ public:
     data.j2.x = x;
     data.j2.y = y;
     data.j2.sw = sw;
+
     notifyObservers();
   }
   inline M1JoystickData *getJoystick2() { return &data.j2; }
@@ -77,6 +83,7 @@ public:
     data.bT = state;
     notifyObservers();
   }
+
   inline bool getButTop() { return data.bT; }
 
   void setButBottom(bool state) {
@@ -121,7 +128,8 @@ public:
 
   void notifyObservers() {
     for (int i = 0; i < observerCount; i++) {
-      observers[i]->update();
+      if (observers[i] != nullptr)
+        observers[i]->update();
     }
   }
 };

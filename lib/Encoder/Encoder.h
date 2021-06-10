@@ -12,6 +12,7 @@
   ((ENCODER_BUTTON_LISTEN_PERIOD) + 850u) // long press = listen_period or MORE
 #define MAX_NUM_LISTENER 4u
 
+
 class Encoder {
 private:
   uint8_t s1_;
@@ -39,7 +40,7 @@ private:
   void buttonListenerHendler();
   void spinPressureHendler(void (*)());
   uint8_t listenerBufferIndex_;
-  void (*listenerArray[MAX_NUM_LISTENER])();
+  // void (*listenerArray[MAX_NUM_LISTENER])();
   volatile uint32_t debounce_;
 
 public:
@@ -49,7 +50,7 @@ public:
   // Encoder(uint8_t, uint8_t, uint8_t, void (*)());
   void setClickListener(void (*)());
   void setLongClickListener(void (*)());
-  void setInterruptRotationListener(void (*)());
+  void setRotationListener(void (*)());
   void setSpinPressureListener(void (*)());
   void setLongClickTime(); // todo
   // void listenRotation();

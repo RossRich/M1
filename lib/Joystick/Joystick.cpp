@@ -42,27 +42,35 @@ void Joystick::init() {
 void Joystick::listen() {
   if (millis() - listenPeriod_ >= J_LISTEN_PERIOD) {
 
-    keyStatus_ = digitalRead(keyPin_);
-    bool changeKeyStatus = keyStatus_ != prewKeyStatus_;
+    _jState.but = static_cast<bool>(digitalRead(keyPin_));
 
-    xVal_ =
+    _jPos.pX = _jPos.x;
+    _jPos.pY = _jPos.y;
+
+    _jPos.x =
         map(analogRead(vrxPin_), J_DEFAULT_POT_MIN, J_DEFAULT_POT_MAX, minPos_,
             maxPos_);
-    yVal_ =
+    _jPos.y =
         map(analogRead(vryPin_), J_DEFAULT_POT_MIN, J_DEFAULT_POT_MAX, minPos_,
             maxPos_);
 
-    if (keyStatus_ == J_KEY_PRESS && changeKeyStatus) {
-
-    } else if (keyStatus_ == J_KEY_UNPRESS && changeKeyStatus) {
-      keyClick_ = true;
-    } else {
-      keyClick_ = false;
-    }
-
-    prewKeyStatus_ = keyStatus_;
+    events();
     listenPeriod_ = millis();
   }
+}
+
+void Joystick::events() {
+  bool changedKeyStatus = _jState.but != _jState.pBut;
+
+  if (_jState.but == J_KEY_PRESS && changedKeyStatus) {
+    // ???
+  } else if (_jState.but == J_KEY_UNPRESS && changedKeyStatus) {
+    keyClick_ = true;
+  } else {
+    keyClick_ = false;
+  }
+
+  _jState.pBut = _jState.but;
 }
 
 bool Joystick::isKeyClick() {

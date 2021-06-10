@@ -2,8 +2,8 @@
 
 void StartView::print(MenuDisplay *dispaly) {
   Serial.println(getName());
-  dispaly->clear();
-  dispaly->setCursor(0, 0);
+  // dispaly->clear();
+  // dispaly->setCursor(0, 0);
   dispaly->print(getName());
   // cout << getName() << endl;
   // cout << getName() << endl;
@@ -11,8 +11,8 @@ void StartView::print(MenuDisplay *dispaly) {
 
 void StartView::scroll(int dir) {}
 void StartView::select() {
-  if (_mNext != nullptr)
-    _mMenuManager->setVisible(_mNext);
+  /* if (_mNext != nullptr)
+    _mMenuManager->setVisible(_mNext); */
 }
 void StartView::add(MenuComponent *next) {
   next->setParent(this);

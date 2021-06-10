@@ -1,0 +1,7 @@
+#if !defined(INPUT_EVENTS_H)
+#define INPUT_EVENTS_H
+
+enum INPUT_EVENTS { CLICK, MOVE, PRESS };
+enum ENCODER_EVENTS { TOP, DOWN };
+
+#endif // INPUT_EVENTS_H

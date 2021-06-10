@@ -4,7 +4,8 @@ Encoder::Encoder() {
   s1_ = 2;
   s2_ = 7;
   button_ = 10;
-  debounce_ =  butLongPressTimer_ = internalTime_ = millis() + ENCODER_BUTTON_LISTEN_PERIOD;
+  debounce_ = butLongPressTimer_ = internalTime_ =
+      millis() + ENCODER_BUTTON_LISTEN_PERIOD;
   buttonState_ = prewButtonState_ = ENCODER_BUTTON_UNPRESS;
   listenerBufferIndex_ = 0;
   // butChangeState_ = false;
@@ -36,16 +37,19 @@ Encoder::Encoder(uint8_t s1Pin, uint8_t s2Pin) : Encoder() {
   // pinMode(buttonPin, INPUT_PULLUP);
 }
 
-void Encoder::setInterruptRotationListener(void (*uFunc)()) {
+void Encoder::setRotationListener(void (*uFunc)()) {
   if ((uFunc != nullptr) && (digitalPinToInterrupt(s1_) != NOT_AN_INTERRUPT))
     attachInterrupt(digitalPinToInterrupt(s1_), uFunc, CHANGE);
 }
 
 void Encoder::listenRotation() {
-  uint32_t time = micros();
-  if(time < debounce_) return;
+
+  uint32_t time = millis();
+  if (time < debounce_ || rotationDiraction_ != 0)
+    return;
+  Serial.println(debounce_);
   noInterrupts();
-  debounce_ = time + 10;
+  debounce_ = time + 50;
 
   bool ss1 = bool(digitalRead(s1_));
   bool ss2 = bool(digitalRead(s2_));
@@ -59,10 +63,10 @@ void Encoder::listenRotation() {
   else if(ss1 && ss2)
     rotationDiraction_ = ENCODER_CCW_ROTATION;
 
-  if (button_ != 255)
+  /* if (button_ != 255)
     spinPressure_ =
-        (digitalRead(button_) == ENCODER_BUTTON_PRESS) ? true : false;
-  
+        (digitalRead(button_) == ENCODER_BUTTON_PRESS) ? true : false; */
+
   interrupts();
 }
 
@@ -86,9 +90,9 @@ void Encoder::listen() {
     } else
       butDown_ = butLongPress_ = butUp_ = butClick_ = isReady_ = false;
 
-    if (listenerBufferIndex_ != 0)
+    /* if (listenerBufferIndex_ != 0)
       for (uint8_t i = 0; i < listenerBufferIndex_; ++i)
-        (*listenerArray[i])();
+        (*listenerArray[i])(); */
 
     prewButtonState_ = buttonState_;
   }
@@ -100,7 +104,7 @@ void Encoder::listen() {
   } */
 }
 
-bool Encoder::isButtonKeep() const {
+/* bool Encoder::isButtonKeep() const {
   return (buttonState_ == ENCODER_BUTTON_PRESS) ? true : false;
 }
 
@@ -134,7 +138,7 @@ bool Encoder::isSpinPressure() {
     return true;
   }
   return false;
-}
+} */
 
 /* bool Encoder::isButtonLongPress() {
   if (butLongPress_ && !isReadedLongPress_) {
@@ -153,10 +157,10 @@ int8_t Encoder::getDiraction() {
   return tDiractions;
 }
 
-void Encoder::addToListener(void (*uFunc)()) {
+/* void Encoder::addToListener(void (*uFunc)()) {
   if (uFunc != NULL)
     listenerArray[listenerBufferIndex_++] = uFunc;
-}
+} */
 
 /* void Encoder::setLongClickListener(void (*uFunc)()) {
   listenItem[listenerBufferIndex_++] = {uFunc, &butLongPress_};
