@@ -6,11 +6,11 @@
 
 Input::Input() {
 
-  /* _mLeftJoy =
+  _mLeftJoy =
       new DroneJoystick(JOYSTICK_LEFT_X, JOYSTICK_LEFT_Y, JOYSTICK_LEFT_KEY);
 
   _mRightJoy =
-      new DroneJoystick(JOYSTICK_RIGHT_X, JOYSTICK_RIGHT_Y, JOYSTICK_RIGHT_KEY); */
+      new DroneJoystick(JOYSTICK_RIGHT_X, JOYSTICK_RIGHT_Y, JOYSTICK_RIGHT_KEY);
 
   _mTopBut = new DroneButton(ANALOG_BUTTON_PIN, ANALOG_BUTTON_TOP);
 
@@ -22,11 +22,11 @@ Input::Input() {
 
   _mEncBut = new DroneButton(ANALOG_BUTTON_PIN, ANALOG_BUTTON_ENC);
 
-  // _mRange = new DroneRange(RANGE_POWER, RANGE_MIN_POS, RANGE_MAX_POS);
+  _mRange = new DroneRange(RANGE_POWER, RANGE_MIN_POS, RANGE_MAX_POS);
 
   // _mEnc = new DroneEncoder(&gEnc);
 
-  // subscribe(this);
+  subscribe(this);
 }
 
 Input::~Input() {}
@@ -46,14 +46,15 @@ void Input::checkJoy() {
 
 void Input::checkRange() { _mRange->check(); }
 
-void Input::checkEnc() {/*  _mEnc->check();  */}
+void Input::checkEnc() { /*  _mEnc->check();  */
+}
 
 void Input::check() {
   checkBut();
+  checkJoy();
+  checkRange();
   // checkEnc();
-  // checkJoy();
-  // checkRange();
-} 
+}
 
 void Input::subscribe(InputObserver *o) {
   _mTopBut->subscribe(o);
@@ -62,10 +63,10 @@ void Input::subscribe(InputObserver *o) {
   _mRightBut->subscribe(o);
   _mEncBut->subscribe(o);
 
-  // _mLeftJoy->subscribe(o);
-  // _mRightJoy->subscribe(o);
+  _mLeftJoy->subscribe(o);
+  _mRightJoy->subscribe(o);
 
-  // _mRange->subscribe(o);
+  _mRange->subscribe(o);
 
   // _mEnc->subscribe(o);
 }

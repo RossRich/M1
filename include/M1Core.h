@@ -1,8 +1,6 @@
 #if !defined(M1_H)
 #define M1_H
 
-
-
 #include <Arduino.h>
 
 void clickOnEncoderButton();

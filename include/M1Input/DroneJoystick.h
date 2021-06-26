@@ -45,7 +45,10 @@ public:
 
   void subscribe(InputObserver *o) { _mObs = o; }
   void unsubscrube(InputObserver *o) {}
-  void notify(IEv e) { _mObs->update(this, e); }
+  void notify(IEv e) {
+    if (_mObs != nullptr)
+      _mObs->update(this, e);
+  }
 };
 
 #endif // DRONE_JOYSTICK_H

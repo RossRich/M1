@@ -1,6 +1,5 @@
-#include <Arduino.h>
-#include <M1Controller.h>
 #include "M1Core.h"
+#include "M1Controller.h"
 
 // Encoder e1(ENCODER_S1, ENCODER_S2)
 
@@ -15,4 +14,4 @@ void setup() {
   Serial.println(F("Controller ok"));
 }
 
-void loop() { m1Controller->listenChange(); }
+void loop() { m1Controller->listen(); }

@@ -5,19 +5,11 @@
 #define RF24_CSN 10u // MO - MOSI(11)
 #define TX_NRF "TNode"
 #define RX_NRF "RNode"
-#define OBSERVERS_COUNT 5u
 
 #include <Arduino.h>
+#include "ObsSubj/Subject.h"
+
 // #include <RF24.h>
-
-class Observer {
-private:
-public:
-  Observer() {}
-  virtual ~Observer() {}
-
-  virtual void update() = 0;
-};
 
 struct M1JoystickData {
   int x;
@@ -36,19 +28,17 @@ struct M1Data {
   int range;
 };
 
-class M1Model {
+class M1Model : public Subject {
 private:
   // RF24 *radio = nullptr;
-  Observer **observers = nullptr;
+
   M1Data data;
-  int observerCount = 0;
 
 public:
   M1Model() {
     // radio = new RF24(RF24_CE, RF24_CSN);
-    observers = new Observer *[OBSERVERS_COUNT];
   }
-  ~M1Model() {}
+  virtual ~M1Model() {}
 
   void init() {
     Serial.println(F("Model init"));
@@ -66,7 +56,7 @@ public:
     data.j1.y = y;
     data.j1.sw = sw;
 
-    notifyObservers();
+    // notifyObservers();
   }
   inline M1JoystickData *getJoystick1() { return &data.j1; }
 
@@ -75,38 +65,38 @@ public:
     data.j2.y = y;
     data.j2.sw = sw;
 
-    notifyObservers();
+    // notifyObservers();
   }
   inline M1JoystickData *getJoystick2() { return &data.j2; }
 
   void setButTop(bool state) {
     data.bT = state;
-    notifyObservers();
+    // notifyObservers();
   }
 
   inline bool getButTop() { return data.bT; }
 
   void setButBottom(bool state) {
     data.bB = state;
-    notifyObservers();
+    // notifyObservers();
   }
   inline bool getButBottom() { return data.bB; }
 
   void setButLeft(bool state) {
     data.bL = state;
-    notifyObservers();
+    // notifyObservers();
   }
   inline bool getButLeft() { return data.bL; }
 
   void setButRight(bool state) {
     data.bR = state;
-    notifyObservers();
+    // notifyObservers();
   }
   inline bool getButRight() { return data.bR; }
 
   void setButEnc(bool state) {
     data.bE = state;
-    notifyObservers();
+    // notifyObservers();
   }
   inline bool getButEnc() { return data.bE; }
 
@@ -114,24 +104,14 @@ public:
     data.range = range;
     notifyObservers();
   }
-  inline int getRange() { return data.range; }
+  inline int *getRange() { return &data.range; }
 
-  void registerObserver(Observer *observer) {
-    if (observerCount == OBSERVERS_COUNT)
-      return;
-
-    observers[observerCount] = observer;
-    ++observerCount;
-  }
-
-  inline void removeObserver(Observer *observer) { return; }
-
-  void notifyObservers() {
-    for (int i = 0; i < observerCount; i++) {
-      if (observers[i] != nullptr)
-        observers[i]->update();
-    }
-  }
+  // Subject
+  void addObserver(Observer *obs) override { Subject::addObserver(obs); };
+  void delObserver(Observer *obs) override { Subject::delObserver(obs); };
+  void notifyObservers() override {
+    Subject::notifyObservers();
+  };
 };
 
 #endif // M1_MEDEL_H

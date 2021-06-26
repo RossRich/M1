@@ -2,7 +2,6 @@
 #define JOYSTICK_H_
 
 #include <Arduino.h>
-#include <Vector.h>
 
 #define VRX A0
 #define VRY A1

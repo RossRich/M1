@@ -55,8 +55,9 @@ public:
 
   void check();
   void subscribe(InputObserver *o);
-  void setActions(IInputActions *a) { _mActions = a; }
+  void addListener(IInputActions *a) { _mActions = a; }
 
+  //inputobserver
   void update(VButton *b, IEv e) override;
   void update(VJoystick *j, IEv e) override;
   void update(VRange *r, IEv e) override;
