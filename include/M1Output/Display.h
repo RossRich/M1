@@ -23,7 +23,7 @@ public:
   void print(char ch) { _mDriver->print(ch); }
 
   void print(int16_t intVal) { _mDriver->print(intVal); }
-  void print(int *intVal) { _mDriver->print(*intVal); }
+  void print(int16_t *intVal) { _mDriver->print(*intVal); }
 
   void setCursor(uint8_t x, uint8_t y) override { _mDriver->setCursor(x, y); }
 
@@ -45,6 +45,10 @@ public:
     if (_mDriver->isError()) {
       Serial.print(F("Display error: "));
       Serial.println(_mDriver->isError());
+      if(_mDriver->isError() == HD_ERR_PCF) {
+        Serial.print(F("PCF error: "));
+        Serial.println(_i2cDriver->isError());
+      }
       _mDriver->qClean();
       _mDriver->clearError();
     } else {

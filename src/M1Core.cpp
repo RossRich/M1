@@ -6,7 +6,7 @@
 M1Model *m;
 M1Controller *m1Controller;
 void setup() {
-  Serial.begin(57600);
+  Serial.begin(115200);
   Serial.println(F("Start"));
   m = new M1Model;
   Serial.println(F("Model ok"));

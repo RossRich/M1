@@ -13,8 +13,8 @@
  **/
 class Potentiometer {
 private:
-  uint16_t _minADC;
-  uint16_t _maxADC;
+  int16_t _minADC;
+  int16_t _maxADC;
   uint8_t _potPin;
   int16_t _signalOut;
   int16_t _penSignalOut;
@@ -62,6 +62,11 @@ public:
   inline int16_t value() { return _signalOut; }
 
   /**
+   * @return pot value pointer
+   **/
+  inline int16_t* value_p() { return &_signalOut; }
+
+  /**
    * Set minOut and maxOut value for converting to out range
    *
    * @param minOut - min value for converting from raw value
@@ -77,8 +82,8 @@ public:
    * @param minADC - min value for ADC range
    * @param maxADC - max value for ADC range
    **/
-  void setADCrange(uint16_t minADC, uint16_t maxADC);
-  void setADCrange(uint16_t *minADC, uint16_t *maxADC);
+  void setADCrange(int16_t minADC, int16_t maxADC);
+  void setADCrange(int16_t *minADC, int16_t *maxADC);
   
   /**
    * Manual setup work ADC range

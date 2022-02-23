@@ -23,10 +23,10 @@ void Potentiometer::listen() {
   if (millis() - _listenPeriod >= DEFAULT_LISTEN_PERIOD) {
     _penSignalOut = _signalOut;
     _signalOut =
-        constrain(static_cast<uint16_t>(analogRead(_potPin)), _minADC, _maxADC);
+        constrain(static_cast<int16_t>(analogRead(_potPin)), _minADC, _maxADC);
     _signalOut = map(_signalOut, _minADC, _maxADC, _minOut, _maxOut);
-    if (_isFilterEnable)
-      _signalOut = filter->filtered(_signalOut);
+    // if (_isFilterEnable)
+      // _signalOut = filter->filtered(_signalOut);
 
     _listenPeriod = millis();
   }
@@ -42,12 +42,12 @@ void Potentiometer::setRange(int16_t *minOut, int16_t *maxOut) {
   maxOut = &_maxOut;
 }
 
-void Potentiometer::setADCrange(uint16_t minADC, uint16_t maxADC) {
+void Potentiometer::setADCrange(int16_t minADC, int16_t maxADC) {
   _minADC = minADC;
   _maxADC = maxADC;
 }
 
-void Potentiometer::setADCrange(uint16_t *minADC, uint16_t *maxADC) {
+void Potentiometer::setADCrange(int16_t *minADC, int16_t *maxADC) {
   minADC = &_minADC;
   maxADC = &_maxADC;
 }

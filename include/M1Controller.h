@@ -31,6 +31,25 @@ private:
   Input *_mInput = nullptr;
   uint32_t _inputTimer = 0;
   uint32_t _viewTimer = 0;
+  void bindModelData();
+  void update();
+
+  // InputActions
+  void leftBut(INPUT_EVENTS e) override;
+  void rightBut(INPUT_EVENTS e) override;
+  void bottomBut(INPUT_EVENTS e) override;
+  void topBut(INPUT_EVENTS e) override;
+  void encBut(INPUT_EVENTS e) override;
+
+  void joyLeft(INPUT_EVENTS e, JoyData *jd) override;
+  void joyRight(INPUT_EVENTS e, JoyData *jd) override;
+
+  void joyLeftButton(INPUT_EVENTS e) override;
+  void joyRightButton(INPUT_EVENTS e) override;
+
+  void range(INPUT_EVENTS e, int16_t *val) override;
+
+  void encoderRot(INPUT_EVENTS e, int8_t dir) override;
 
 public:
   M1Controller(M1Model *m1Model);
@@ -60,32 +79,16 @@ public:
 
   void actionItem() {} */
 
-  // InputActions
-  void leftBut(INPUT_EVENTS e) override;
-  void rightBut(INPUT_EVENTS e) override;
-  void bottomBut(INPUT_EVENTS e) override;
-  void topBut(INPUT_EVENTS e) override;
-  void encBut(INPUT_EVENTS e) override;
-
-  void joyLeft(INPUT_EVENTS e, int16_t x, int16_t y) override;
-  void joyRight(INPUT_EVENTS e, int16_t x, int16_t y) override;
-
-  void joyLeftButton(INPUT_EVENTS e) override;
-  void joyRightButton(INPUT_EVENTS e) override;
-
-  void range(INPUT_EVENTS e, int16_t val) override;
-
-  void encoderRot(INPUT_EVENTS e, int8_t dir) override;
+  int16_t *getRangeVal_p();
+  JoyData* getLeftJData_p();
+  JoyData* getRightJData_p();
 
   void listen();
-
-  int* getRange();
-  JoyData* getJoy();
 
   /** TODO
    *  Common error handler
    **/
-  void checkError() {}
+  // void checkError() {}
 };
 
 #endif // M1_CONTROLLER_H

@@ -8,35 +8,26 @@
 
 #include <Arduino.h>
 #include "ObsSubj/Subject.h"
+#include "JoyTypes.h"
 
 // #include <RF24.h>
 
-struct M1JoystickData {
-  int x;
-  int y;
-  bool sw;
-};
-
-struct M1Data {
-  M1JoystickData j1;
-  M1JoystickData j2;
-  bool bT;
-  bool bB;
-  bool bL;
-  bool bR;
-  bool bE;
-  int range;
-};
-
 class M1Model : public Subject {
 private:
+  JoyData *_joyLeft_p = nullptr;
+  JoyData *_joyRight_p = nullptr;
+  int16_t *_rangeValue_p = nullptr;
+  bool *_topBut_p = nullptr;
+  bool *_bottomBut_p = nullptr;
+  bool *_leftBut_p = nullptr;
+  bool *_rightBut_p = nullptr;
+  bool *_encBut_p = nullptr;
   // RF24 *radio = nullptr;
-
-  M1Data data;
 
 public:
   M1Model() {
     // radio = new RF24(RF24_CE, RF24_CSN);
+    init();
   }
   virtual ~M1Model() {}
 
@@ -49,69 +40,42 @@ public:
     // attachInterrupt(digitalPinToInterrupt(3), nrfInterrupt, LOW);
   }
 
-  // inline void setState(M1_STATE s) { _mState = s; }
+  // Joystick left
+  inline void setJoyLeft_p(JoyData *jd) { _joyLeft_p = jd; }
+  inline JoyData *getJoyLeft_p() { return _joyLeft_p; }
 
-  void setJoystick1(int x, int y, int sw) {
-    data.j1.x = x;
-    data.j1.y = y;
-    data.j1.sw = sw;
+  // Joystick right
+  inline void setJoyRight_p(JoyData *jd) { _joyRight_p = jd; }
+  inline JoyData *getJoyRight_p() { return _joyRight_p; }
 
-    // notifyObservers();
-  }
-  inline M1JoystickData *getJoystick1() { return &data.j1; }
+  // Top but
+  inline void setButTop_p(bool *but) { _topBut_p = but; }
+  inline bool *getButTop_p() { return _topBut_p; }
 
-  void setJoystick2(int x, int y, int sw) {
-    data.j2.x = x;
-    data.j2.y = y;
-    data.j2.sw = sw;
+  // Bottom button
+  inline void setButBottom_p(bool *but) { _bottomBut_p = but; }
+  inline bool *getButBottom_p() { return _bottomBut_p; }
 
-    // notifyObservers();
-  }
-  inline M1JoystickData *getJoystick2() { return &data.j2; }
+  // Left button
+  inline void setButLeft_p(bool *but) { _leftBut_p = but; }
+  inline bool *getButLeft_p() { return _leftBut_p; }
 
-  void setButTop(bool state) {
-    data.bT = state;
-    // notifyObservers();
-  }
+  // Right button
+  inline void setButRight_p(bool *but) { _rightBut_p = but; }
+  inline bool *getButRight_p() { return _rightBut_p; }
 
-  inline bool getButTop() { return data.bT; }
+  // Encoder button
+  inline void setButEnc_p(bool *but) { _encBut_p = but; }
+  inline bool *getButEnc_p() { return _encBut_p; }
 
-  void setButBottom(bool state) {
-    data.bB = state;
-    // notifyObservers();
-  }
-  inline bool getButBottom() { return data.bB; }
-
-  void setButLeft(bool state) {
-    data.bL = state;
-    // notifyObservers();
-  }
-  inline bool getButLeft() { return data.bL; }
-
-  void setButRight(bool state) {
-    data.bR = state;
-    // notifyObservers();
-  }
-  inline bool getButRight() { return data.bR; }
-
-  void setButEnc(bool state) {
-    data.bE = state;
-    // notifyObservers();
-  }
-  inline bool getButEnc() { return data.bE; }
-
-  void setRange(int range) {
-    data.range = range;
-    notifyObservers();
-  }
-  inline int *getRange() { return &data.range; }
+  // Range
+  inline void setRange_p(int16_t *rangePointer) { _rangeValue_p = rangePointer; }
+  inline int16_t *getRange_p() { return _rangeValue_p; }
 
   // Subject
   void addObserver(Observer *obs) override { Subject::addObserver(obs); };
   void delObserver(Observer *obs) override { Subject::delObserver(obs); };
-  void notifyObservers() override {
-    Subject::notifyObservers();
-  };
+  void notifyObservers() override { Subject::notifyObservers(); };
 };
 
 #endif // M1_MEDEL_H

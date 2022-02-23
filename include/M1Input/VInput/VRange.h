@@ -8,6 +8,7 @@ public:
   virtual ~VRange() {}
   virtual void check() = 0;
   virtual int16_t getValue() = 0;
+  virtual int16_t* getValue_p() = 0;
 };
 
 #endif // V_RANGE_H

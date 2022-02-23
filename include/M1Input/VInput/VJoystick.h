@@ -2,13 +2,13 @@
 #define V_JOYSTICK_H
 
 #include <inttypes.h>
+#include "JoyTypes.h"
 
 class VJoystick {
 public:
   virtual ~VJoystick() {}
   virtual void check() = 0;
-  virtual int16_t getX() = 0;
-  virtual int16_t getY() = 0;
+  virtual JoyData *getData_p() = 0;
 };
 
 #endif // V_JOYSTICK_H

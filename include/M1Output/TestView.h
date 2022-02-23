@@ -3,47 +3,51 @@
 
 #include <ArduMenu.h>
 #include <MenuComponent.h>
+#include <M1Input/Input.h>
 
 class TestView : public MenuComponent {
-  int *_test;
-  const char *_label;
+  int16_t *_range = nullptr;
+  JoyData *_leftJData = nullptr;
+  JoyData *_rightJData = nullptr;
+  const char *_rangeLabel = "Throttle: ";
+  const char *_leftJoyLabel = "JLx: ";
+  const char *_rightJoyLabel = "JRx: ";
 
 public:
-  TestView(const char *name) : MenuComponent(name){};
-  ~TestView(){};
+  explicit TestView(const char *name) : MenuComponent(name){};
+  virtual ~TestView(){};
 
   void select() override {}
 
   void add(MenuComponent *item) override {}
 
-  void print(MenuDisplay *display) override { 
-    display->print(_label);
-    display->print(F(": "));
-    display->print(_test);
-   }
+  void print(MenuDisplay *display) override {
+    display->print(_rangeLabel);
+    display->print(_range);
+    display->setCursor(0, 2);
+    display->print(_leftJoyLabel);
+    display->print(_leftJData->x);
+    display->setCursor(9, 2);
+    display->print(_rightJoyLabel);
+    // display->print(_rightJData->x);
+  }
 
   void scroll(int dir) override {}
 
   void sweep(int dir) override {}
 
-  void setLabel(const char *l ) {
-    _label = l;
-  }
-
-  void setVal(int *v) {
-    _test = v;
-  }
+  inline void setRange(int16_t *v) { _range = v; }
+  inline void setLeftJoy(JoyData *jd) { _leftJData = jd; }
+  inline void setRightJoy(JoyData *jd) { _rightJData = jd; }
 
   void update(MenuDisplay *display) {
-    // display->setCursor(8, 1);
-    // display->print("   ");
-    display->setCursor(8, 1);
-    display->print((uint8_t)*_test);
+    // display->setCursor(10, 1);
+    // display->print(_range);
+    // display->print(" ");
+    display->setCursor(5, 2);
+    display->print(_leftJData->x);
+    display->print(" ");
   }
 };
-
-// TestView::TestView() : MenuComponent(_name) {}
-
-// TestView::~TestView() {}
 
 #endif // _TEST_VIEW_H

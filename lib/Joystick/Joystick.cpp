@@ -5,7 +5,7 @@ Joystick::Joystick() {
   vryPin_ = VRY;
   keyPin_ = KEY;
 
-  keyStatus_ = keyClick_ = prewKeyStatus_ = false;
+  keyClick_ = false;
 
   maxPos_ = 255;
   minPos_ = 0;
@@ -25,7 +25,7 @@ Joystick::Joystick(uint8_t vrx, uint8_t vry, uint8_t key) {
 }
 
 Joystick::Joystick(
-    uint8_t vrx, uint8_t vry, uint16_t minPosition, uint16_t maxPosition)
+    uint8_t vrx, uint8_t vry, int16_t minPosition, int16_t maxPosition)
     : Joystick(vrx, vry, 0) {
   minPos_ = minPosition;
   maxPos_ = maxPosition;
@@ -42,7 +42,7 @@ void Joystick::init() {
 void Joystick::listen() {
   if (millis() - listenPeriod_ >= J_LISTEN_PERIOD) {
 
-    _jState.but = static_cast<bool>(digitalRead(keyPin_));
+    // _jState.but = static_cast<bool>(digitalRead(keyPin_));
 
     _jPos.pX = _jPos.x;
     _jPos.pY = _jPos.y;
@@ -54,7 +54,7 @@ void Joystick::listen() {
         map(analogRead(vryPin_), J_DEFAULT_POT_MIN, J_DEFAULT_POT_MAX, minPos_,
             maxPos_);
 
-    events();
+    // events();
     listenPeriod_ = millis();
   }
 }

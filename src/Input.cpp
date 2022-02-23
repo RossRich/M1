@@ -71,52 +71,54 @@ void Input::subscribe(InputObserver *o) {
   // _mEnc->subscribe(o);
 }
 
+
+// InputObserver
 void Input::update(VButton *b, IEv e) {
   if (b == _mTopBut) {
-    _mActions->topBut(e);
+    _mAction->topBut(e);
   }
 
   if (b == _mBottomBut) {
-    _mActions->bottomBut(e);
+    _mAction->bottomBut(e);
   }
 
   if (b == _mLeftBut) {
-    _mActions->leftBut(e);
+    _mAction->leftBut(e);
   }
 
   if (b == _mRightBut) {
-    _mActions->rightBut(e);
+    _mAction->rightBut(e);
   }
 
   if (b == _mEncBut) {
-    _mActions->encBut(e);
+    _mAction->encBut(e);
   }
 }
 
 void Input::update(VJoystick *j, IEv e) {
   if (j == _mLeftJoy && e == INPUT_EVENTS::MOVE)
-    _mActions->joyLeft(e, j->getX(), j->getY());
+    _mAction->joyLeft(e, j->getData_p());
 
   if (j == _mRightJoy && e == INPUT_EVENTS::MOVE)
-    _mActions->joyRight(e, j->getX(), j->getY());
+    _mAction->joyRight(e, j->getData_p());
 
-  if (j == _mLeftJoy && e == INPUT_EVENTS::CLICK)
-    _mActions->joyLeftButton(e);
+ /*  if (j == _mLeftJoy && e == INPUT_EVENTS::CLICK)
+    _mAction->joyLeftButton(e);
 
   if (j == _mRightJoy && e == INPUT_EVENTS::CLICK)
-    _mActions->joyRightButton(e);
+    _mAction->joyRightButton(e);
 
   if (j == _mLeftJoy && e == INPUT_EVENTS::PRESS)
-    _mActions->joyLeftButton(e);
+    _mAction->joyLeftButton(e);
 
   if (j == _mRightJoy && e == INPUT_EVENTS::PRESS)
-    _mActions->joyRightButton(e);
+    _mAction->joyRightButton(e); */
 }
 
 void Input::update(VRange *r, IEv e) {
-  _mActions->range(e, _mRange->getValue());
+  _mAction->range(e, _mRange->getValue_p());
 }
 
 void Input::update(VEncoder *en, IEv e) {
-  // _mActions->encoderRot(e, en->getDiraction());
+  // _mAction->encoderRot(e, en->getDiraction());
 }

@@ -3,19 +3,31 @@
 M1Controller::M1Controller(M1Model *m1Model) : _mModel(m1Model) {
   Serial.println(F("M1Controller constructor"));
 
+  _mInput = new Input();
+
+  bindModelData();
+  // BUG: If first initialize M1View before Input or bindModelData(), MC not
+  // works correctly, becouse in M1View use getRangeVal_p() func from Input;
   _mView = new M1View(this);
   Serial.println(F("M1View ok"));
 
   _mModel->addObserver(_mView);
-
-  _mInput = new Input();
   _mInput->addListener(this);
-
-  _inputTimer = millis() + 5000;
+  _inputTimer = millis();
   _viewTimer = _inputTimer;
 }
 
 M1Controller::~M1Controller() {}
+
+void M1Controller::bindModelData() {
+  _mModel->setJoyLeft_p(_mInput->getJoyLeftData_p());
+  _mModel->setJoyRight_p(_mInput->getJoyRightData_p());
+  _mModel->setRange_p(_mInput->getRangeValue_p());
+}
+
+int16_t *M1Controller::getRangeVal_p() { return _mModel->getRange_p(); }
+JoyData *M1Controller::getLeftJData_p() { return _mModel->getJoyLeft_p(); }
+JoyData *M1Controller::getRightJData_p() { return _mModel->getJoyRight_p(); }
 
 // inputaction
 
@@ -59,20 +71,30 @@ void M1Controller::encBut(INPUT_EVENTS e) {
   }
 }
 
-void M1Controller::joyLeft(INPUT_EVENTS e, int16_t x, int16_t y) {
+void M1Controller::joyLeft(INPUT_EVENTS e, JoyData *jd) {
+#if defined(_DEBUG_)
+
   Serial.print("Joy:Left: ");
-  Serial.print(x);
+  Serial.print(*jd->x);
   Serial.print('\t');
-  Serial.println(y);
-  // _mController->changeLeftJValue(x, y);
+  Serial.println(*jd->y);
+
+#endif // _DEBUG_
+
+  _mView->updateJoy();
 }
 
-void M1Controller::joyRight(INPUT_EVENTS e, int16_t x, int16_t y) {
+void M1Controller::joyRight(INPUT_EVENTS e, JoyData *jd) {
+#if defined(_DEBUG_)
+
   Serial.print("Joy:Right: ");
-  Serial.print(x);
+  Serial.print(*jd->x);
   Serial.print('\t');
-  Serial.println(y);
-  // _mController->changeRightJValue(x, y);
+  Serial.println(*jd->y);
+
+#endif // _DEBUG_
+
+  // _mView->updateJoy();
 }
 
 void M1Controller::joyLeftButton(INPUT_EVENTS e) {
@@ -91,10 +113,15 @@ void M1Controller::joyRightButton(INPUT_EVENTS e) {
     Serial.println("PRESS");
 }
 
-void M1Controller::range(INPUT_EVENTS e, int16_t val) {
+void M1Controller::range(INPUT_EVENTS e, int16_t *val) {
+#if defined(_DEBUG_)
+
   Serial.print("Range: ");
-  Serial.println(val);
-  _mModel->setRange(val);
+  Serial.println(*val);
+
+#endif // _DEBUG_
+
+  _mView->updateRange();
 }
 
 void M1Controller::encoderRot(INPUT_EVENTS e, int8_t dir) {
@@ -105,10 +132,6 @@ void M1Controller::encoderRot(INPUT_EVENTS e, int8_t dir) {
     Serial.println("TOP");
 }
 
-int *M1Controller::getRange() { return _mModel->getRange(); }
-
-JoyData *M1Controller::getJoy() { return nullptr; }
-
 void M1Controller::listen() {
   uint32_t ms = millis();
 
@@ -117,7 +140,7 @@ void M1Controller::listen() {
     _inputTimer = millis();
   }
 
-  if (ms - _viewTimer >= 100) {
+  if (ms - _viewTimer >= 500) {
     _mView->listen();
     _viewTimer = millis();
   }

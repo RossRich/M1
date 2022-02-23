@@ -4,27 +4,34 @@
 #include "VJoystick.h"
 #include <Joystick.h>
 
-struct JoyData {
-  int x;
-  int y;
-  bool sw;
-};
-
 class DroneJoystick : public VJoystick, public InputSubject {
 private:
   Joystick *_mJ = nullptr;
   InputObserver *_mObs = nullptr;
+  JoyData _jData;
+
+  DroneJoystick() {}
 
 public:
   DroneJoystick(uint8_t xPin, uint8_t yPin, uint8_t keyPin)
-      : _mJ(new Joystick(xPin, yPin, keyPin)) {}
+      : _mJ(new Joystick(xPin, yPin, keyPin)) {
+    init();
+  }
 
   DroneJoystick(uint8_t xPin, uint8_t yPin, uint8_t keyPin, InputObserver *obs)
-      : _mJ(new Joystick(xPin, yPin, keyPin)), _mObs(obs) {}
+      : _mJ(new Joystick(xPin, yPin, keyPin)), _mObs(obs) {
+    init();
+  }
 
   ~DroneJoystick() {
     if (_mJ != nullptr)
       delete _mJ;
+  }
+
+  void init() {
+    _jData.x = _mJ->x_p();
+    _jData.y = _mJ->y_p();
+    _jData.sw = _mJ->butState_p();
   }
 
   void check() override {
@@ -40,8 +47,7 @@ public:
       notify(INPUT_EVENTS::CLICK);
   }
 
-  int16_t getX() override { return _mJ->x(); }
-  int16_t getY() override { return _mJ->y(); }
+  JoyData *getData_p() override { return &_jData; }
 
   void subscribe(InputObserver *o) { _mObs = o; }
   void unsubscrube(InputObserver *o) {}

@@ -1,14 +1,10 @@
 #if !defined(DRON_INTERFACE_H)
 #define DRON_INTERFACE_H
 
-#include "Display.h"
-#include "MenuManager.h"
-#include "StartView.h"
-#include "Menu.h"
-#include "EditView.h"
-#include "TestView.h"
+#include "M1View.h"
 
-class DronInterface {
+
+class DronInterface : public M1View {
 private:
   Display *_mDisplay;
   TestView *_tt;
@@ -25,9 +21,11 @@ private:
   // EditView *_mFiveEdit;
 
 public:
-  explicit DronInterface(Display *display) : _mDisplay(display) {}
-  DronInterface() {
-    _mDisplay = new Display();
+  explicit DronInterface(M1Controller *controller, Display *display)
+      : M1View(controller), _mDisplay(display) {}
+
+  DronInterface(M1Controller *controller) : M1View(controller) {
+   
     // _mMenuManager = _mDi->init();
     // _mMenuManager->print();
     init();
@@ -37,8 +35,7 @@ public:
   MenuManager *init() {
 
     // _mStartView = new StartView("StartView");
-    _tt = new TestView("_TEst_");
-    _tt->setLabel("Label1");
+
     // _tt->setVal(val);
     _mMenuManager = new MenuManager(_tt, _mDisplay);
     _mMenuManager->print();
@@ -54,19 +51,20 @@ public:
     return _mMenuManager;
   }
 
-  inline void select() { _mMenuManager->select(); }
-
   inline void print() { _mMenuManager->print(); }
-
-  inline void scroll(int dir) { _mMenuManager->scroll(dir); }
-
-  inline void sweep(int dir) { _mMenuManager->sweep(dir); }
-
   inline void listen() { _mDisplay->draw(); }
-
   inline void update() { _mMenuManager->update(); }
 
-  inline void setVal(int *val) { _tt->setVal(val); }
+  void select() { _mMenuManager->select(); }
+  void scroll(int dir) { _mMenuManager->scroll(dir); }
+  void sweep(int dir) { _mMenuManager->sweep(dir); }
+
+  // setup testview
+  void setupTestView() {
+    _tt = new TestView("_TEst_");
+    _tt->setLabel("Label1");
+    _tt->setVal();
+  }
 };
 
 #endif // DRON_INTERFACE_H

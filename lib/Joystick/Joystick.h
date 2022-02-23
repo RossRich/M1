@@ -33,11 +33,9 @@ private:
   uint8_t keyPin_;
   int16_t xVal_;
   int16_t yVal_;
-  uint16_t maxPos_;
+  int16_t maxPos_;
   int16_t minPos_;
   uint32_t listenPeriod_;
-  bool keyStatus_;
-  bool prewKeyStatus_;
   bool keyClick_;
   void init();
   void events();
@@ -45,12 +43,14 @@ private:
 public:
   Joystick();
   Joystick(uint8_t vrx, uint8_t vry, uint8_t key);
-  Joystick(
-      uint8_t vrx, uint8_t vry, uint16_t minPosition, uint16_t maxPosition);
+  Joystick(uint8_t vrx, uint8_t vry, int16_t minPosition, int16_t maxPosition);
   void listen();
   bool isKeyClick();
   inline int16_t x() { return _jPos.x; }
+  inline int16_t *x_p() { return &_jPos.x; }
   inline int16_t y() { return _jPos.y; }
+  inline int16_t *y_p() { return &_jPos.y; }
+  inline bool *butState_p() { return &_jState.but; }
   inline bool isKeyPress() {
     return (_jState.but == J_KEY_PRESS) ? true : false;
   }
@@ -58,8 +58,6 @@ public:
   inline int16_t difX() { return _jPos.x - _jPos.pX; }
 
   inline int16_t difY() { return _jPos.y - _jPos.pY; }
-
-  
 };
 
 #endif // JOYSTICK_H_

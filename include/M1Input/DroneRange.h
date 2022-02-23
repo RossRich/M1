@@ -17,11 +17,12 @@ public:
 
   void check() override {
     _mP->listen();
-    
+
     if (_mP->difVal() != 0)
       notify(INPUT_EVENTS::MOVE);
   }
   int16_t getValue() override { return _mP->value(); }
+  int16_t *getValue_p() override { return _mP->value_p(); }
 
   void subscribe(InputObserver *o) override { _mObs = o; }
   void unsubscrube(InputObserver *o) override { _mObs = nullptr; }

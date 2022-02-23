@@ -28,7 +28,7 @@
 
 class Input : public InputObserver {
 private:
-  IInputActions *_mActions;
+  IInputActions *_mAction;
 
   DroneButton *_mTopBut;
   DroneButton *_mBottomBut;
@@ -55,9 +55,13 @@ public:
 
   void check();
   void subscribe(InputObserver *o);
-  void addListener(IInputActions *a) { _mActions = a; }
+  void addListener(IInputActions *a) { _mAction = a; }
 
-  //inputobserver
+  inline int16_t *getRangeValue_p() { return _mRange->getValue_p(); }
+  inline JoyData *getJoyLeftData_p() { return _mLeftJoy->getData_p(); }
+  inline JoyData *getJoyRightData_p() { return _mRightJoy->getData_p(); }
+
+  // InputObserver
   void update(VButton *b, IEv e) override;
   void update(VJoystick *j, IEv e) override;
   void update(VRange *r, IEv e) override;
